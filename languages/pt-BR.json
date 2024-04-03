@@ -92,6 +92,12 @@
       "ignorePassiveFloor": {
         "name": "Ignore o valor mínimo de percepção passiva para verificações ativas",
         "hint": "Ativa uma opção de homebrew para ignorar o valor de percepção passiva ao realizar um teste de percepção ativa"
+      },
+      "friendlyUmbralSight": {
+        "name": "Como tratar fichas amigas com Visão Umbral",
+        "allow": "Visão Umbral está escondida para Darkvision",
+        "inCombat": "Ignore Visão Umbral a menos que esteja em combate",
+        "ignore": "Ignorar Visão Umbral"
       }
     },
     "pf1": {
