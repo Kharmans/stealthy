@@ -65,12 +65,6 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
-      "friendlyUmbralSight": {
-        "name": "How to treat friendly tokens with Umbral Sight",
-        "allow": "Umbral Sight is hidden to Darkvision",
-        "inCombat": "Ignore Umbral Sight unless in combat",
-        "ignore": "Ignore Umbral Sight"
-      },
       "tokenLighting": {
         "name": "Check token lighting conditions",
         "hint": "Check for token effects that indicate lighting condition of the token."

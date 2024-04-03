@@ -69,12 +69,6 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
-      "friendlyUmbralSight": {
-        "name": "Como tratar fichas amigas com Visão Umbral",
-        "allow": "Visão Umbral está escondida para Darkvision",
-        "inCombat": "Ignore Visão Umbral a menos que esteja em combate",
-        "ignore": "Ignorar Visão Umbral"
-      },
       "tokenLighting": {
         "name": "Verificar as condições de iluminação dos tokens",
         "hint": "Verificar se há efeitos de token que indicam a condição de iluminação dos tokens."

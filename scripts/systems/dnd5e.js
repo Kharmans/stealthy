@@ -6,19 +6,6 @@ class Engine5e extends Engine {
   constructor() {
     super();
 
-    game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
-      name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
-      scope: 'world',
-      config: true,
-      type: String,
-      choices: {
-        'allow': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.allow"),
-        'inCombat': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.inCombat"),
-        'ignore': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.ignore")
-      },
-      default: 'inCombat'
-    });
-
     game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
       name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
       hint: game.i18n.localize("stealthy.dnd5e.tokenLighting.hint"),
@@ -95,58 +82,40 @@ class Engine5e extends Engine {
     Hooks.on('renderSettingsConfig', (app, html, data) => {
       $('<div>').addClass('form-group group-header')
         .html(game.i18n.localize("stealthy.dnd5e.name"))
-        .insertBefore($('[name="stealthy.friendlyUmbralSight"]')
+        .insertBefore($('[name="stealthy.tokenLighting"]')
           .parents('div.form-group:first'));
     });
   }
 
   static LIGHT_LABELS = ['dark', 'dim', 'bright'];
 
-  canSpotTarget(visionSource, hiddenEffect, target) {
-    const source = visionSource.object?.actor;
-    const stealth = hiddenEffect.flags.stealthy?.hidden ?? target.actor.system.skills.ste.passive;
-    const spotEffect = this.findSpotEffect(source);
+  canSpotTarget(visionSource, hiddenEffect, targetToken) {
+    const srcToken = visionSource.object.document;
+    if (hiddenEffect) {
+      const source = srcToken?.actor;
+      const stealth = hiddenEffect.flags.stealthy?.hidden ?? target.actor.system.skills.ste.passive;
+      const spotEffect = this.findSpotEffect(source);
 
-    // active perception loses ties, passive perception wins ties to simulate the
-    // idea that active skills need to win outright to change the status quo. Passive
-    // perception means that stealth is being the active skill.
-    const spotPair = spotEffect?.flags.stealthy?.spot;
-    let perception;
+      // active perception loses ties, passive perception wins ties to simulate the
+      // idea that active skills need to win outright to change the status quo. Passive
+      // perception means that stealth is being the active skill.
+      const spotPair = spotEffect?.flags.stealthy?.spot;
+      let perception;
 
-    if (game.settings.get(Stealthy.MODULE_ID, 'tokenLighting')) {
-      perception = this.adjustForLightingConditions(spotPair, visionSource, source, target.actor);
-    }
-    else {
-      perception = this.adjustForDefaultConditions(spotPair, visionSource, source, target.actor);
+      if (game.settings.get(Stealthy.MODULE_ID, 'tokenLighting')) {
+        perception = this.adjustForLightingConditions(spotPair, visionSource, source, targetToken.actor);
+      }
+      else {
+        perception = this.adjustForDefaultConditions(spotPair, visionSource, source, targetToken.actor);
+      }
+
+      if (perception <= stealth) {
+        Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${targetToken.name}'s ${stealth}`);
+        return false;
+      }
     }
 
-    if (perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't see ${target.name}'s ${stealth}`);
-      return false;
-    }
     return true;
-  }
-
-  basicVision(wrapped, visionSource, mode, config) {
-    const target = config.object?.actor;
-    let invisibleToDarkvision = false;
-    const friendlyUmbralSight = game.settings.get(Stealthy.MODULE_ID, 'friendlyUmbralSight');
-    let ignoreFriendlyUmbralSight = friendlyUmbralSight === 'ignore' || !game.combat && friendlyUmbralSight === 'inCombat';
-    ignoreFriendlyUmbralSight =
-      ignoreFriendlyUmbralSight && config.object.document?.disposition === visionSource.object.document?.disposition;
-    if (!ignoreFriendlyUmbralSight && visionSource.visionMode?.id === 'darkvision') {
-      const umbralSight = target?.itemTypes?.feat?.find(f => f.name === game.i18n.localize('Umbral Sight'));
-      if (umbralSight) invisibleToDarkvision = true;
-    }
-
-    if (invisibleToDarkvision) {
-      Stealthy.log(`${visionSource.object.name}'s darkvision can't see ${config.object.name}`);
-      let ourMode = duplicate(mode);
-      ourMode.range = 0;
-      return super.basicVision(wrapped, visionSource, ourMode, config);
-    }
-
-    return super.basicVision(wrapped, visionSource, mode, config);
   }
 
   makeSpotEffectMaker(label) {

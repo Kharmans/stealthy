@@ -26,23 +26,21 @@ export default class Engine {
     // Detection mode patching
     libWrapper.register(
       Stealthy.MODULE_ID,
-      'DetectionModeBasicSight.prototype.testVisibility',
-      function (wrapped, visionSource, mode, config = {}) {
-        const engine = stealthy.engine;
-        if (engine.isHidden(visionSource, config.object)) return false;
-        return engine.basicVision(wrapped, visionSource, mode, config);
-      },
-      libWrapper.MIXED,
-      { perf_mode: libWrapper.PERF_FAST }
-    );
-
-    libWrapper.register(
-      Stealthy.MODULE_ID,
-      'DetectionModeInvisibility.prototype.testVisibility',
-      function (wrapped, visionSource, mode, config = {}) {
-        const engine = stealthy.engine;
-        if (engine.isHidden(visionSource, config.object)) return false;
-        return engine.seeInvisibility(wrapped, visionSource, mode, config);
+      'DetectionMode.prototype._canDetect',
+      function (wrapped, visionSource, target) {
+        switch (this.type) {
+          case DetectionMode.DETECTION_TYPES.SIGHT:
+          case DetectionMode.DETECTION_TYPES.SOUND:
+            const src = visionSource.object.document;
+            if (src instanceof TokenDocument) {
+              const tgt = target?.document;
+              if (tgt instanceof TokenDocument) {
+                const engine = stealthy.engine;
+                if (engine.isHidden(visionSource, tgt)) return false;
+              }
+            }
+        }
+        return wrapped(visionSource, target);
       },
       libWrapper.MIXED,
       { perf_mode: libWrapper.PERF_FAST }
@@ -62,9 +60,7 @@ export default class Engine {
 
     if (!ignoreFriendlyStealth) {
       const hiddenEffect = this.findHiddenEffect(target?.actor);
-      if (hiddenEffect) {
-        return !this.canSpotTarget(visionSource, hiddenEffect, target);
-      }
+      return !this.canSpotTarget(visionSource, hiddenEffect, target);
     }
 
     return false;
@@ -85,16 +81,6 @@ export default class Engine {
     // This should would in the absence of a spot effect on the viewer, using
     // a passive or default value as necessary
     return true;
-  }
-
-  basicVision(wrapped, visionSource, mode, config) {
-    // Any special filtering beyond stealth testing is handled here, like being invisible to darkvision/etc.
-    return wrapped(visionSource, mode, config);
-  }
-
-  seeInvisibility(wrapped, visionSource, mode, config) {
-    // Any special filtering beyond stealth testing is handled here.
-    return wrapped(visionSource, mode, config);
   }
 
   makeHiddenEffectMaker(label) {

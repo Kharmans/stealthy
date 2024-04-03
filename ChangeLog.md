@@ -1,5 +1,10 @@
+# v3.14.0
+* Dnd5e: Breaking change - Stealthy no longer does any Umbral Sight handling. Use Vision5e instead for this feature.
+* Dnd5e: Stealthy's recorded stealth checks are now applied against both sight and sound detection modes.
+* Dnd5e: Switched to _canDetect method for patching into visibility tests
+
 # v3.13.2
-* PF2e: Don't apply seek status when rolling intiative based on perception
+* PF2e: Don't apply seek status when rolling initiative based on perception
 
 # v3.13.1
 * PF2e/Dnd4e: Localize the chat scraping functions

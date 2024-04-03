@@ -65,12 +65,6 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
-      "friendlyUmbralSight": {
-        "name": "Comment traiter les tokens alliés avec Vision des ombres",
-        "allow": "Alliés avec Vision des ombres sont cachés",
-        "inCombat": "Ignore Vision des ombres sauf en combat",
-        "ignore": "Ignorer Vision des ombres"
-      },
       "tokenLighting": {
         "name": "Vérifier les conditions d'éclairage des tokens",
         "hint": "Vérifiez les effets de tokens qui indiquent l'état d'éclairage du token."
