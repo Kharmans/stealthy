@@ -16,24 +16,10 @@
   "relationships": {
     "systems": [
       {
-        "id": "dnd4e",
-        "type": "system",
-        "compatibility": {
-          "verified": "0.4.21"
-        }
-      },
-      {
         "id": "dnd5e",
         "type": "system",
         "compatibility": {
           "verified": "3.0.4"
-        }
-      },
-      {
-        "id": "pf1",
-        "type": "system",
-        "compatibility": {
-          "verified": "0.9.4"
         }
       }
     ],
@@ -55,10 +41,7 @@
   "esmodules": [
     "scripts/stealthy.js",
     "scripts/hooks.js",
-    "scripts/systems/dnd4e.js",
-    "scripts/systems/dnd5e.js",
-    "scripts/systems/pf1.js",
-    "scripts/systems/pf2e.js"
+    "scripts/systems/dnd5e.js"
   ],
   "styles": [
     "styles/stealthy.css"

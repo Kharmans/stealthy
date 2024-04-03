@@ -71,10 +71,12 @@
       },
       "dark": {
         "label": "Dark",
+        "name": "Dark",
         "key": "Clé de localisation pour Dark"
       },
       "dim": {
         "label": "Faible",
+        "name": "Faible",
         "key": "Clé de localisation pour Faible"
       },
       "spotPair": {
@@ -90,7 +92,7 @@
         "hint": "Permet à une option homebrew d'ignorer la valeur de perception passive lors d'un test de perception active"
       },
       "friendlyUmbralSight": {
-        "name": "Comment traiter les tokens alliés avec Vision des ombres",
+        "name": "DEPRECATED - Comment traiter les tokens alliés avec Vision des ombres",
         "allow": "Alliés avec Vision des ombres sont cachés",
         "inCombat": "Ignore Vision des ombres sauf en combat",
         "ignore": "Ignorer Vision des ombres"

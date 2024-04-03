@@ -40,16 +40,16 @@ export class EnginePF1 extends Engine {
     return actor?.items.find(i => i.name === 'Spot' && i.system.active);
   }
 
-  canSpotTarget(visionSource, hiddenEffect, target) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
     const source = visionSource.object?.actor;
-    const stealth = hiddenEffect.flags.stealthy?.hidden ?? (10 + target.actor.system.skills.ste.mod);
+    const stealth = hiddenEffect.flags.stealthy?.hidden ?? (10 + tgtToken.actor.system.skills.ste.mod);
     const spotEffect = this.findSpotEffect(source);
     const spotTake10 = game.settings.get(Stealthy.MODULE_ID, 'spotTake10');
     const perception = spotEffect?.flags.stealthy?.spot
       ?? (spotTake10 ? 10 + source.system.skills.per.mod : undefined);
 
     if (perception === undefined || perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${target.name}'s ${stealth}`);
+      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
       return false;
     }
     return true;

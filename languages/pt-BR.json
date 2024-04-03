@@ -71,10 +71,12 @@
       },
       "dark": {
         "label": "Escuridão",
+        "name": "Escuridão",
         "key": "Chave de localização para rótulo Escuridão."
       },
       "dim": {
         "label": "Penumbra",
+        "name": "Penumbra",
         "key": "Chave de localização para rótulo Penumbra."
       },
       "spotPair": {
@@ -90,7 +92,7 @@
         "hint": "Ativa uma opção de homebrew para ignorar o valor de Percepção Passiva ao realizar um teste de Percepção Ativa."
       },
       "friendlyUmbralSight": {
-        "name": "Como tratar fichas amigas com Visão Umbral",
+        "name": "DEPRECATED - Como tratar fichas amigas com Visão Umbral",
         "allow": "Visão Umbral está escondida para Darkvision",
         "inCombat": "Ignore Visão Umbral a menos que esteja em combate",
         "ignore": "Ignorar Visão Umbral"

@@ -20,16 +20,16 @@ class Engine4e extends Engine {
     });
   }
 
-  canSpotTarget(visionSource, hiddenEffect, target) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
     // Never gets called, neither do the patches for the v10 vision modes
     // dead in the water
     const source = visionSource.object?.actor;
-    const stealth = hiddenEffect.flags.stealthy?.hidden ?? (10 + target.actor.system.skills.stl.total);
+    const stealth = hiddenEffect.flags.stealthy?.hidden ?? (10 + tgtToken.actor.system.skills.stl.total);
     const spotEffect = this.findSpotEffect(source);
     const perception = spotEffect?.flags.stealthy?.spot ?? (10 + source.system.skills.prc.total);
 
     if (perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${target.name}'s ${stealth}`);
+      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
       return false;
     }
     return true;

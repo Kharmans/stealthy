@@ -64,7 +64,7 @@ class Engine5e extends Engine {
       type: Boolean,
       default: false,
     });
-
+  
     game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
       name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
       scope: 'world',
@@ -100,9 +100,41 @@ class Engine5e extends Engine {
     });
   }
 
+  patchFoundry() {
+    if (!game.modules.get("vision-5e")?.active) {
+      super.patchFoundry();
+      return;
+    }
+
+    Stealthy.log('Dnd5e.patchFoundry');
+    // Detection mode patching
+    libWrapper.register(
+      Stealthy.MODULE_ID,
+      'CONFIG.Canvas.detectionModes.basicSight._canDetect',
+      function (wrapped, visionSource, target) {
+        switch (this.type) {
+          case DetectionMode.DETECTION_TYPES.SIGHT:
+            const srcToken = visionSource.object.document;
+            if (!(srcToken instanceof TokenDocument)) break;
+            const tgtToken = target?.document;
+            if (!(tgtToken instanceof TokenDocument)) break;
+            const engine = stealthy.engine;
+            if (engine.isHidden(visionSource, tgtToken)) return false;
+        }
+        return wrapped(visionSource, target);
+      },
+      libWrapper.MIXED,
+      { perf_mode: libWrapper.PERF_FAST }
+    );
+
+    if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
+      StealthyDoors.initialize();
+    }
+  }
+
   static LIGHT_LABELS = ['dark', 'dim', 'bright'];
 
-  canSpotTarget(visionSource, hiddenEffect, targetToken) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
     const srcToken = visionSource.object.document;
     const source = srcToken?.actor;
     const stealth = hiddenEffect.flags.stealthy?.hidden ?? target.actor.system.skills.ste.passive;
@@ -115,14 +147,14 @@ class Engine5e extends Engine {
     let perception;
 
     if (game.settings.get(Stealthy.MODULE_ID, 'tokenLighting')) {
-      perception = this.adjustForLightingConditions(spotPair, visionSource, source, targetToken.actor);
+      perception = this.adjustForLightingConditions(spotPair, visionSource, source, tgtToken.actor);
     }
     else {
-      perception = this.adjustForDefaultConditions(spotPair, visionSource, source, targetToken.actor);
+      perception = this.adjustForDefaultConditions(spotPair, visionSource, source, tgtToken.actor);
     }
 
     if (perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${targetToken.name}'s ${stealth}`);
+      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
       return false;
     }
 

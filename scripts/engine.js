@@ -23,76 +23,42 @@ export default class Engine {
   }
 
   patchFoundry() {
-    // Detection mode patching
-    if (game.settings.get(Stealthy.MODULE_ID, 'useCanDetect')) {
-      libWrapper.register(
-        Stealthy.MODULE_ID,
-        'DetectionMode.prototype._canDetect',
-        function (wrapped, visionSource, target) {
-          switch (this.type) {
-            case DetectionMode.DETECTION_TYPES.SIGHT:
-            case DetectionMode.DETECTION_TYPES.SOUND:
-              const src = visionSource.object.document;
-              if (src instanceof TokenDocument) {
-                const tgt = target?.document;
-                if (tgt instanceof TokenDocument) {
-                  const engine = stealthy.engine;
-                  if (engine.isHidden(visionSource, tgt)) return false;
-                }
-              }
-          }
-          return wrapped(visionSource, target);
-        },
-        libWrapper.MIXED,
-        { perf_mode: libWrapper.PERF_FAST }
-      );
-    }
-    else {
-      libWrapper.register(
-        Stealthy.MODULE_ID,
-        'DetectionModeBasicSight.prototype.testVisibility',
-        function (wrapped, visionSource, mode, config = {}) {
-          const engine = stealthy.engine;
-          if (engine.isHidden(visionSource, config.object)) return false;
-          return wrapped(visionSource, mode, config);
-        },
-        libWrapper.MIXED,
-        { perf_mode: libWrapper.PERF_FAST }
-      );
-
-      libWrapper.register(
-        Stealthy.MODULE_ID,
-        'DetectionModeInvisibility.prototype.testVisibility',
-        function (wrapped, visionSource, mode, config = {}) {
-          const engine = stealthy.engine;
-          if (engine.isHidden(visionSource, config.object)) return false;
-          return wrapped(visionSource, mode, config);
-        },
-        libWrapper.MIXED,
-        { perf_mode: libWrapper.PERF_FAST }
-      );
-    }
+    // Generic Detection mode patching
+    Stealthy.log('Engine.patchFoundry');
+    libWrapper.register(
+      Stealthy.MODULE_ID,
+      'DetectionMode.prototype._canDetect',
+      function (wrapped, visionSource, target) {
+        switch (this.type) {
+          case DetectionMode.DETECTION_TYPES.SIGHT:
+          case DetectionMode.DETECTION_TYPES.SOUND:
+            const srcToken = visionSource.object.document;
+            if (!(srcToken instanceof TokenDocument)) break;
+            const tgtToken = target?.document;
+            if (!(tgtToken instanceof TokenDocument)) break;
+            const engine = stealthy.engine;
+            if (engine.isHidden(visionSource, tgtToken)) return false;
+        }
+        return wrapped(visionSource, target);
+      },
+      libWrapper.MIXED,
+      { perf_mode: libWrapper.PERF_FAST }
+    );
 
     if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
       StealthyDoors.initialize();
     }
   }
 
-  isHidden(visionSource, target) {
+  isHidden(visionSource, tgtToken) {
     const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
-    let ignoreFriendlyStealth = friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat';
-    ignoreFriendlyStealth =
-      ignoreFriendlyStealth &&
-      target.document?.disposition === visionSource.object.document?.disposition;
+    const ignoreFriendlyStealth = friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat';
+    if (ignoreFriendlyStealth && tgtToken?.disposition === visionSource.object.document?.disposition) return false;
 
-    if (!ignoreFriendlyStealth) {
-      const hiddenEffect = this.findHiddenEffect(target?.actor);
-      if (hiddenEffect) {
-        return !this.canSpotTarget(visionSource, hiddenEffect, target);
-      }
-    }
+    const hiddenEffect = this.findHiddenEffect(tgtToken?.actor);
+    if (!hiddenEffect) return false;
 
-    return false;
+    return !this.canDetectHidden(visionSource, hiddenEffect, tgtToken);
   }
 
   findHiddenEffect(actor) {
@@ -105,7 +71,7 @@ export default class Engine {
     return actor?.effects.find(e => (v10 ? e.label : e.name) === this.spotLabel && !e.disabled);
   }
 
-  canSpotTarget(visionSource, hiddenEffect, target) {
+  canDetectHidden(visionSource, hiddenEffect, target) {
     // Implement your system's method for testing spot data vs hidden data
     // This should would in the absence of a spot effect on the viewer, using
     // a passive or default value as necessary

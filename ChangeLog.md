@@ -1,3 +1,10 @@
+# v3.14.2
+* Dnd5e: Temporary workaround for vision-5e hooks while I work on properly hooking up Stealthy to it.
+* Dnd5e: Updated pt-BR translations (Thanks Kharmans)
+* Dnd5e: Added both name and label fields to the language .json files for Dim/Dark
+* PF1: Disabled Stealthy until I can figure out a better way to capture skill rolls
+* Dnd4e: Disabled Stealthy until I can figure out a better way to capture skill rolls
+
 # v3.14.1
 * Dnd5e: Adding a setting to select old reliable way or new experimental way of hooking the visibility tests.
 * PF2e: disabled for the time being, need a better way of hooking hide/seek actions.
