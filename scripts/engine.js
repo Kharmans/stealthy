@@ -24,7 +24,6 @@ export default class Engine {
 
   patchFoundry() {
     // Generic Detection mode patching
-    Stealthy.log('Engine.patchFoundry');
     libWrapper.register(
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',
@@ -51,9 +50,10 @@ export default class Engine {
   }
 
   isHidden(visionSource, tgtToken) {
-    const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
-    const ignoreFriendlyStealth = friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat';
-    if (ignoreFriendlyStealth && tgtToken?.disposition === visionSource.object.document?.disposition) return false;
+    if (tgtToken?.disposition === visionSource.object.document?.disposition) {
+      const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
+      if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return false;
+    }
 
     const hiddenEffect = this.findHiddenEffect(tgtToken?.actor);
     if (!hiddenEffect) return false;

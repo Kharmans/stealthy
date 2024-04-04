@@ -64,7 +64,7 @@ class Engine5e extends Engine {
       type: Boolean,
       default: false,
     });
-  
+
     game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
       name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
       scope: 'world',
@@ -101,19 +101,49 @@ class Engine5e extends Engine {
   }
 
   patchFoundry() {
+    // If vision-5e isn't active, just keep the default behavior
     if (!game.modules.get("vision-5e")?.active) {
       super.patchFoundry();
       return;
     }
 
-    Stealthy.log('Dnd5e.patchFoundry');
-    // Detection mode patching
+    // Pick the sight modes in vision-5e that we want Stealthy to affect
+    let sightModes = [
+      'CONFIG.Canvas.detectionModes.devilsSight._canDetect',
+      'CONFIG.Canvas.detectionModes.etherealSight._canDetect',
+      'CONFIG.Canvas.detectionModes.lightPerception._canDetect',
+      'CONFIG.Canvas.detectionModes.seeAll._canDetect',
+      'CONFIG.Canvas.detectionModes.seeInvisibility._canDetect',
+      'CONFIG.Canvas.detectionModes.witchSight._canDetect',
+    ];
+    for (const mode of sightModes) {
+      libWrapper.register(
+        Stealthy.MODULE_ID,
+        mode,
+        function (wrapped, visionSource, target) {
+          switch (this.type) {
+            case DetectionMode.DETECTION_TYPES.SIGHT:
+              const srcToken = visionSource.object.document;
+              if (!(srcToken instanceof TokenDocument)) break;
+              const tgtToken = target?.document;
+              if (!(tgtToken instanceof TokenDocument)) break;
+              const engine = stealthy.engine;
+              if (engine.isHidden(visionSource, tgtToken)) return false;
+          }
+          return wrapped(visionSource, target);
+        },
+        libWrapper.MIXED,
+        { perf_mode: libWrapper.PERF_FAST }
+      );
+    }
+
+    // Lastly, give Stealthy access to the hearing checks
     libWrapper.register(
       Stealthy.MODULE_ID,
-      'CONFIG.Canvas.detectionModes.basicSight._canDetect',
+      'CONFIG.Canvas.detectionModes.hearing._canDetect',
       function (wrapped, visionSource, target) {
         switch (this.type) {
-          case DetectionMode.DETECTION_TYPES.SIGHT:
+          case DetectionMode.DETECTION_TYPES.SOUND:
             const srcToken = visionSource.object.document;
             if (!(srcToken instanceof TokenDocument)) break;
             const tgtToken = target?.document;
