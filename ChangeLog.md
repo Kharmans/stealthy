@@ -1,3 +1,6 @@
+# v3.14.3
+* Dnd5e: Forgot to add checks to `basicSight` in vision-5e
+
 # v3.14.2
 * Dnd5e: If vision-5e is enabled, add perception vs stealth checks to the following detection modes: `devilsSight`, `etherealSight`, `hearing`, `lightPerception`, `seeAll`, `seeInvisibility`, and `witchSight`
 * Dnd5e: Updated pt-BR translations (thanks Kharmans)

@@ -24,6 +24,7 @@ export default class Engine {
 
   patchFoundry() {
     // Generic Detection mode patching
+    Stealthy.log(`patching DetectionMode.prototype._canDetect`);
     libWrapper.register(
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',

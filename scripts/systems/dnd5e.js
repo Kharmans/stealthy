@@ -109,6 +109,7 @@ class Engine5e extends Engine {
 
     // Pick the sight modes in vision-5e that we want Stealthy to affect
     let sightModes = [
+      'CONFIG.Canvas.detectionModes.basicSight._canDetect',
       'CONFIG.Canvas.detectionModes.devilsSight._canDetect',
       'CONFIG.Canvas.detectionModes.etherealSight._canDetect',
       'CONFIG.Canvas.detectionModes.lightPerception._canDetect',
@@ -117,6 +118,7 @@ class Engine5e extends Engine {
       'CONFIG.Canvas.detectionModes.witchSight._canDetect',
     ];
     for (const mode of sightModes) {
+      Stealthy.log(`patching ${mode}`);
       libWrapper.register(
         Stealthy.MODULE_ID,
         mode,
@@ -138,6 +140,7 @@ class Engine5e extends Engine {
     }
 
     // Lastly, give Stealthy access to the hearing checks
+    Stealthy.log(`patching CONFIG.Canvas.detectionModes.hearing._canDetect`);
     libWrapper.register(
       Stealthy.MODULE_ID,
       'CONFIG.Canvas.detectionModes.hearing._canDetect',
