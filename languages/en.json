@@ -9,7 +9,9 @@
       "preloc": {
         "key": "Localization key for Hidden label",
         "hint": "This string will be sent through i18n.localize(). Changing these may affect overall automation of Stealthy's effects."
-      }
+      },
+      "icon": "Hidden icon",
+      "iconhint": "Default icon for Hidden effect"
     },
     "spot": {
       "label": "Spot",
@@ -19,7 +21,9 @@
       "source": "Spot effect source",
       "preloc": {
         "key": "Localization key for Spot label"
-      }
+      },
+      "icon": "Spot icon",
+      "iconhint": "Default icon for Spot effect"
     },
     "activeSpot": "Active Spot",
     "title": "Stealthy",

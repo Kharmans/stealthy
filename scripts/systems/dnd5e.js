@@ -54,23 +54,19 @@ class Engine5e extends Engine {
       game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
         name: game.i18n.localize("stealthy.dnd5e.dark.key"),
         scope: 'world',
+        requiresReload: true,
         config: true,
         type: String,
         default: v10 ? 'stealthy.dnd5e.dark.label' : 'stealthy.dnd5e.dark.name',
-        onChange: value => {
-          debouncedReload();
-        }
       });
 
       game.settings.register(Stealthy.MODULE_ID, 'dimLabel', {
         name: game.i18n.localize("stealthy.dnd5e.dim.key"),
         scope: 'world',
+        requiresReload: true,
         config: true,
         type: String,
         default: v10 ? 'stealthy.dnd5e.dim.label' : 'stealthy.dnd5e.dim.name',
-        onChange: value => {
-          debouncedReload();
-        }
       });
 
       this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));

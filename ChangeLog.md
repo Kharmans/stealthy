@@ -1,4 +1,5 @@
 # pending
+* Added settings to set the default Hidden and Spot effect icons
 * Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active
 * Dnd5e: Removed `DimIsBright` optional setting
 

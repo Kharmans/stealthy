@@ -21,12 +21,10 @@ Hooks.once('setup', () => {
     name: game.i18n.localize("stealthy.spotHiddenDoors.name"),
     hint: game.i18n.localize("stealthy.spotHiddenDoors.hint"),
     scope: 'world',
+    requiresReload: true,
     config: true,
     type: Boolean,
     default: false,
-    onChange: value => {
-      debouncedReload();
-    },
   });
 
   let sources = {
@@ -46,6 +44,17 @@ Hooks.once('setup', () => {
     default: 'ae'
   });
 
+  game.settings.register(Stealthy.MODULE_ID, 'hiddenIcon', {
+    name: game.i18n.localize("stealthy.hidden.icon"),
+    hint: game.i18n.localize("stealthy.hidden.iconhint"),
+    scope: 'world',
+    requiresReload: true,
+    config: true,
+    type: String,
+    filePicker: true,
+    default: 'icons/magic/perception/shadow-stealth-eyes-purple.webp'
+  });
+
   game.settings.register(Stealthy.MODULE_ID, 'spotSource', {
     name: game.i18n.localize("stealthy.spot.source"),
     hint: game.i18n.localize("stealthy.source.hint"),
@@ -56,29 +65,36 @@ Hooks.once('setup', () => {
     default: 'ae'
   });
 
+  game.settings.register(Stealthy.MODULE_ID, 'spotIcon', {
+    name: game.i18n.localize("stealthy.spot.icon"),
+    hint: game.i18n.localize("stealthy.spot.iconhint"),
+    scope: 'world',
+    requiresReload: true,
+    config: true,
+    type: String,
+    filePicker: true,
+    default: 'icons/commodities/biological/eye-blue.webp'
+  });
+
   const v10 = Math.floor(game.version) < 11;
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenLabel', {
     name: game.i18n.localize("stealthy.hidden.preloc.key"),
     hint: game.i18n.localize("stealthy.hidden.preloc.hint"),
     scope: 'world',
+    requiresReload: true,
     config: true,
     type: String,
     default: v10 ? 'stealthy.hidden.label' : 'stealthy.hidden.name',
-    onChange: value => {
-      debouncedReload();
-    }
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotLabel', {
     name: game.i18n.localize("stealthy.spot.preloc.key"),
     scope: 'world',
+    requiresReload: true,
     config: true,
     type: String,
     default: v10 ? 'stealthy.spot.label' : 'stealthy.spot.name',
-    onChange: value => {
-      debouncedReload();
-    }
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'logLevel', {

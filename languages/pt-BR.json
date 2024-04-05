@@ -9,7 +9,9 @@
       "preloc": {
         "key": "Chave de localização para rótulo Escondido",
         "hint": "Esta string será enviada através de i18n.localize(). Mudar isso pode afetar a automação geral dos efeitos do Stealthy."
-      }
+      },
+      "icon": "Ícone Escondido",
+      "iconhint": "Ícone padrão para o efeito Escondido"
     },
     "spot": {
       "label": "Percebendo",
@@ -19,7 +21,9 @@
       "source": "Origem Percebendo",
       "preloc": {
         "key": "Chave de localização para rótulo Percebido"
-      }
+      },
+      "icon": "Ícone Percebendo",
+      "iconhint": "Ícone padrão para o efeito Percebendo"
     },
     "activeSpot": "Percebendo Passivamente",
     "title": "Stealthy",

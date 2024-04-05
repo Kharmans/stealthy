@@ -9,7 +9,9 @@
       "preloc": {
         "key": "Clé de localisation pour l'étiquette masquée",
         "hint": "Cette chaîne sera envoyée via i18n.localize(). "
-      }
+      },
+      "icon": "Icône cachée",
+      "iconhint": "Icône par défaut pour l'effet masqué"
     },
     "spot": {
       "label": "Détection",
@@ -19,7 +21,9 @@
       "source": "Source d'effet ponctuel",
       "preloc": {
         "key": "Clé de localisation pour l'étiquette Spot"
-      }
+      },
+      "icon": "Icône Détection",
+      "iconhint": "Icône par défaut pour l'effet Détection"
     },
     "activeSpot": "Détection active",
     "title": "Furtif",

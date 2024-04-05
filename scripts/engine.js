@@ -84,10 +84,11 @@ export default class Engine {
     return (flag, source) => {
       let hidden;
       const v10 = Math.floor(game.version) < 11;
+      const hiddenIcon = game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon');
       if (v10) {
         hidden = {
           label,
-          icon: 'icons/magic/perception/shadow-stealth-eyes-purple.webp',
+          icon: hiddenIcon,
           changes: [],
           flags: {
             convenientDescription: game.i18n.localize("stealthy.hidden.description"),
@@ -98,7 +99,7 @@ export default class Engine {
       } else {
         hidden = {
           name: label,
-          icon: 'icons/magic/perception/shadow-stealth-eyes-purple.webp',
+          icon: hiddenIcon,
           changes: [],
           description: game.i18n.localize("stealthy.hidden.description"),
           flags: {
@@ -124,10 +125,11 @@ export default class Engine {
     return (flag, source) => {
       let spot;
       const v10 = Math.floor(game.version) < 11;
+      const spotIcon = game.settings.get(Stealthy.MODULE_ID, 'spotIcon');
       if (v10) {
         spot = {
           label,
-          icon: 'icons/commodities/biological/eye-blue.webp',
+          icon: spotIcon,
           flags: {
             convenientDescription: game.i18n.localize("stealthy.spot.description"),
             stealthy: flag,
@@ -137,7 +139,7 @@ export default class Engine {
       } else {
         spot = {
           name: label,
-          icon: 'icons/commodities/biological/eye-blue.webp',
+          icon: spotIcon,
           description: game.i18n.localize("stealthy.spot.description"),
           flags: {
             stealthy: flag,
