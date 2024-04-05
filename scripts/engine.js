@@ -1,5 +1,5 @@
 import { Stealthy } from "./stealthy.js";
-import StealthyDoors from "./doors.js";
+import Doors from "./doors.js";
 
 export default class Engine {
 
@@ -46,7 +46,7 @@ export default class Engine {
     );
 
     if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
-      StealthyDoors.initialize();
+      Doors.initialize();
     }
   }
 

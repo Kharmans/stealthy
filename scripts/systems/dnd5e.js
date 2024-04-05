@@ -1,5 +1,6 @@
 import { Stealthy } from '../stealthy.js';
 import Engine from '../engine.js';
+import Doors from "../doors.js";
 
 class Engine5e extends Engine {
 
@@ -176,7 +177,7 @@ class Engine5e extends Engine {
     );
 
     if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
-      StealthyDoors.initialize();
+      Doors.initialize();
     }
   }
 
