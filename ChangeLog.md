@@ -1,3 +1,6 @@
+# v3.14.4
+* Fixed the mangled door import code
+
 # v3.14.3
 * Dnd5e: Forgot to add checks to `basicSight` in vision-5e
 
