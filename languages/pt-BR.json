@@ -83,10 +83,6 @@
         "name": "Registar desvantagem de Percepção ao rolar um teste",
         "hint": "Analisa os resultados do teste de Percepção para obter um resultado normal e um com desvantagem, rolando um segundo dado se necessário."
       },
-      "dimIsBright": {
-        "name": "Trate Penumbra como Luz Plena com Visão no Escuro",
-        "hint": "Se habilitado, o comportamento será o mesmo do Foundry e se desabilitado, será como as regras da 5E"
-      },
       "ignorePassiveFloor": {
         "name": "Ignore o valor mínimo de Percepção Passiva para verificações ativas",
         "hint": "Ativa uma opção de homebrew para ignorar o valor de Percepção Passiva ao realizar um teste de Percepção Ativa."

@@ -36,6 +36,7 @@ export default class Engine {
             if (!(srcToken instanceof TokenDocument)) break;
             const tgtToken = target?.document;
             if (!(tgtToken instanceof TokenDocument)) break;
+            Stealthy.logIfDebug(`testing DetectionMode.prototype._canDetect`);
             const engine = stealthy.engine;
             if (engine.isHidden(visionSource, tgtToken)) return false;
         }

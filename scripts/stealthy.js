@@ -81,4 +81,21 @@ export class Stealthy {
     }
   }
 
+  static logIfDebug(format, ...args) {
+    const level = game.settings.get(Stealthy.MODULE_ID, 'logLevel');
+    if (level === 'debug') {
+
+      function colorizeOutput(format, ...args) {
+        return [
+          `%cstealthy %c|`,
+          ...Stealthy.CONSOLE_COLORS,
+          format,
+          ...args,
+        ];
+      }
+
+      console.debug(...colorizeOutput(format, ...args));
+    }
+  }
+
 }

@@ -29,7 +29,7 @@ class Engine5e extends Engine {
       default: 'inCombat'
     });
 
-    const tlcActive = game.modules.get("tokenlightcondition")?.active && !game.modules.get("vision-5e")?.active;
+    const tlcActive = game.modules.get("tokenlightcondition")?.active;
 
     game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
       name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
@@ -71,15 +71,6 @@ class Engine5e extends Engine {
         onChange: value => {
           debouncedReload();
         }
-      });
-
-      game.settings.register(Stealthy.MODULE_ID, 'dimIsBright', {
-        name: game.i18n.localize("stealthy.dnd5e.dimIsBright.name"),
-        hint: game.i18n.localize("stealthy.dnd5e.dimIsBright.hint"),
-        scope: 'world',
-        config: true,
-        type: Boolean,
-        default: false,
       });
 
       this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));
@@ -124,20 +115,20 @@ class Engine5e extends Engine {
     }
 
     // Pick the sight modes in vision-5e that we want Stealthy to affect
-    let sightModes = [
-      'CONFIG.Canvas.detectionModes.basicSight._canDetect',
-      'CONFIG.Canvas.detectionModes.devilsSight._canDetect',
-      'CONFIG.Canvas.detectionModes.etherealSight._canDetect',
-      'CONFIG.Canvas.detectionModes.lightPerception._canDetect',
-      'CONFIG.Canvas.detectionModes.seeAll._canDetect',
-      'CONFIG.Canvas.detectionModes.seeInvisibility._canDetect',
-      'CONFIG.Canvas.detectionModes.witchSight._canDetect',
+    const sightModes = [
+      'basicSight',
+      'devilsSight',
+      'etherealSight',
+      'lightPerception',
+      'seeAll',
+      'seeInvisibility',
+      'witchSight',
     ];
     for (const mode of sightModes) {
       Stealthy.log(`patching ${mode}`);
       libWrapper.register(
         Stealthy.MODULE_ID,
-        mode,
+        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
         function (wrapped, visionSource, target) {
           switch (this.type) {
             case DetectionMode.DETECTION_TYPES.SIGHT:
@@ -145,6 +136,7 @@ class Engine5e extends Engine {
               if (!(srcToken instanceof TokenDocument)) break;
               const tgtToken = target?.document;
               if (!(tgtToken instanceof TokenDocument)) break;
+              Stealthy.logIfDebug(`testing ${mode} vs "${tgtToken.name}"`);
               const engine = stealthy.engine;
               if (engine.isHidden(visionSource, tgtToken, mode)) return false;
           }
@@ -156,7 +148,7 @@ class Engine5e extends Engine {
     }
 
     // Lastly, give Stealthy access to the hearing checks
-    Stealthy.log(`patching CONFIG.Canvas.detectionModes.hearing._canDetect`);
+    Stealthy.log(`patching hearing`);
     libWrapper.register(
       Stealthy.MODULE_ID,
       'CONFIG.Canvas.detectionModes.hearing._canDetect',
@@ -167,8 +159,9 @@ class Engine5e extends Engine {
             if (!(srcToken instanceof TokenDocument)) break;
             const tgtToken = target?.document;
             if (!(tgtToken instanceof TokenDocument)) break;
+            Stealthy.logIfDebug(`testing hearing vs "${tgtToken.name}"`);
             const engine = stealthy.engine;
-            if (engine.isHidden(visionSource, tgtToken, 'CONFIG.Canvas.detectionModes.hearing._canDetect')) return false;
+            if (engine.isHidden(visionSource, tgtToken, 'hearing')) return false;
         }
         return wrapped(visionSource, target);
       },
@@ -181,7 +174,7 @@ class Engine5e extends Engine {
     }
   }
 
-  static LIGHT_LABELS = ['dark', 'dim', 'bright'];
+  static LIGHT_LABELS = ['dark', 'dim', 'bright', 'bright'];
 
   canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode) {
     const srcToken = visionSource.object.document;
@@ -196,18 +189,13 @@ class Engine5e extends Engine {
     let perception;
 
     if (game.settings.get(Stealthy.MODULE_ID, 'tokenLighting')) {
-      perception = this.adjustForLightingConditions(spotPair, visionSource, source, tgtToken.actor);
+      perception = this.adjustForLightingConditions(spotPair, visionSource, source, tgtToken.actor, detectionMode);
     }
     else {
-      perception = this.adjustForDefaultConditions(spotPair, visionSource, source, tgtToken.actor);
+      perception = this.adjustForDefaultConditions(spotPair, visionSource, source, tgtToken.actor, detectionMode);
     }
 
-    if (perception <= stealth) {
-      Stealthy.log(`${detectionMode}: "${visionSource.object.name}"'s ${perception} can't detect "${tgtToken.name}"'s ${stealth}`);
-      return false;
-    }
-
-    return true;
+    return perception > stealth;
   }
 
   makeSpotEffectMaker(label) {
@@ -293,19 +281,24 @@ class Engine5e extends Engine {
     return source.system.skills.prc.passive - 5;
   }
 
-  adjustForDefaultConditions(spotPair, visionSource, source, target) {
+  adjustForDefaultConditions(spotPair, visionSource, source, target, detectionMode) {
     const passivePrc = source?.system?.skills?.prc?.passive ?? -100;
+    let debugData = { passivePrc };
     let perception = spotPair?.normal
       ?? spotPair
       ?? (passivePrc + 1);
-    if (!game.settings.get(Stealthy.MODULE_ID, 'ignorePassiveFloor'))
+    debugData.perception = perception;
+    if (!game.settings.get(Stealthy.MODULE_ID, 'ignorePassiveFloor')) {
       perception = Math.max(perception, passivePrc);
+      debugData.clampedPerception = perception;
+    }
+    Stealthy.logIfDebug('adjustForDefaultConditions', debugData);
     return perception;
   }
 
   // check target Token Lighting conditions via effects usage
   // look for effects that indicate Dim or Dark condition on the token
-  adjustForLightingConditions(spotPair, visionSource, source, target) {
+  adjustForLightingConditions(spotPair, visionSource, source, target, detectionMode) {
     let debugData = { spotPair };
     let perception;
 
@@ -314,14 +307,22 @@ class Engine5e extends Engine {
     const v10 = Math.floor(game.version) < 11;
     if (target?.effects.find(e => (v10 ? e.label : e.name) === this.darkLabel && !e.disabled)) { lightBand = 0; }
     if (target?.effects.find(e => (v10 ? e.label : e.name) === this.dimLabel && !e.disabled)) { lightBand = 1; }
-    debugData.lightLevel = Engine5e.LIGHT_LABELS[lightBand];
+    debugData.initialLightLevel = Engine5e.LIGHT_LABELS[lightBand];
 
     // Adjust the light band based on conditions
-    debugData.id = visionSource.visionMode?.id;
-    if (visionSource.visionMode?.id === 'darkvision') {
-      if (game.settings.get(Stealthy.MODULE_ID, 'dimIsBright')) lightBand = lightBand + 1;
-      else if (!lightBand) lightBand = 1;
-      debugData.adjustedLightLevel = Engine5e.LIGHT_LABELS[lightBand];
+    if (detectionMode) {
+      debugData.detectionMode = detectionMode;
+      if (detectionMode === 'basicSight') {
+        lightBand = lightBand + 1;
+        debugData.adjustedLightLevel = Engine5e.LIGHT_LABELS[lightBand];
+      }
+    }
+    else {
+      debugData.id = visionSource.visionMode?.id;
+      if (visionSource.visionMode?.id === 'darkvision') {
+        lightBand = lightBand + 1;
+        debugData.adjustedLightLevel = Engine5e.LIGHT_LABELS[lightBand];
+      }
     }
 
     // Extract the normal perception values from the source
@@ -359,7 +360,7 @@ class Engine5e extends Engine {
     }
     debugData.perception = perception;
 
-    Stealthy.log('adjustForLightingConditions5e', debugData);
+    Stealthy.logIfDebug('adjustForLightingConditions', debugData);
     return perception;
   }
 

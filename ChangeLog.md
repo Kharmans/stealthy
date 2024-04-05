@@ -1,5 +1,6 @@
 # pending
-* Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active and the `Vision 5e` module is NOT active
+* Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active
+* Dnd5e: Removed `DimIsBright` optional setting
 
 # v3.14.4
 * Fixed the mangled door import code
