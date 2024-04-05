@@ -17,6 +17,14 @@ Hooks.once('setup', () => {
     default: 'inCombat'
   });
 
+  game.settings.register(Stealthy.MODULE_ID, 'playerHud', {
+    name: game.i18n.localize("stealthy.playerHud.name"),
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+  });
+
   game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', {
     name: game.i18n.localize("stealthy.spotHiddenDoors.name"),
     hint: game.i18n.localize("stealthy.spotHiddenDoors.hint"),
@@ -129,7 +137,7 @@ Hooks.once('setup', () => {
 });
 
 Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
-  if (game.user.isGM == true) {
+  if (game.user.isGM == true || game.settings.get(Stealthy.MODULE_ID, 'playerHud')) {
     const token = tokenHUD.object;
     const actor = token?.actor;
     const engine = stealthy.engine;
@@ -141,10 +149,12 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
         `<input id="ste_hid_inp_box" title="${game.i18n.localize("stealthy.hidden.inputBox")}" type="text" name="hidden_value_inp_box" value="${value}"></input>`
       );
       html.find(".right").append(inputBox);
-      inputBox.change(async (inputbox) => {
-        if (token === undefined) return;
-        await engine.setHiddenValue(actor, duplicate(hiddenEffect), flag, Number(inputbox.target.value));
-      });
+      if (game.user.isGM == true) {
+        inputBox.change(async (inputbox) => {
+          if (token === undefined) return;
+          await engine.setHiddenValue(actor, duplicate(hiddenEffect), flag, Number(inputbox.target.value));
+        });
+      }
     }
 
     const spotEffect = engine.findSpotEffect(actor);
@@ -154,10 +164,12 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
         `<input id="ste_spt_inp_box" title="${game.i18n.localize("stealthy.spot.inputBox")}" type="text" name="spot_value_inp_box" value="${value}"></input>`
       );
       html.find(".left").append(inputBox);
-      inputBox.change(async (inputbox) => {
-        if (token === undefined) return;
-        await engine.setSpotValue(actor, duplicate(spotEffect), flag, Number(inputbox.target.value));
-      });
+      if (game.user.isGM == true) {
+        inputBox.change(async (inputbox) => {
+          if (token === undefined) return;
+          await engine.setSpotValue(actor, duplicate(spotEffect), flag, Number(inputbox.target.value));
+        });
+      }
     }
   }
 });

@@ -37,6 +37,9 @@
       "inCombat": "Only test Perception in combat",
       "ignore": "Ignore Perception tests"
     },
+    "playerHud": {
+      "name": "Allow players to see (not edit) Hidden and Spot values on the token HUD"
+    },
     "source": {
       "hint": "Where to find the effect",
       "ce": {

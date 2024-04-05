@@ -37,6 +37,9 @@
       "inCombat": "Ne tester la perception qu'en combat",
       "ignore": "Ignorer les tests de perception"
     },
+    "playerHud": {
+      "name": "Autoriser les joueurs à voir (et non à modifier) ​​les valeurs cachées et ponctuelles sur le HUD du jeton"
+    },
     "source": {
       "hint": "Où trouver l'effet",
       "ce": {

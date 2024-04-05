@@ -31,6 +31,9 @@
       "name": "Detecção automática de portas escondidas",
       "hint": "Tokens podem identificar portas ocultas se seu teste de Percepção superar o valor furtivo da porta."
     },
+    "playerHud": {
+      "name": "Permitir que os jogadores vejam (não editem) valores ocultos e visíveis no HUD do token"
+    },
     "friendlyStealth": {
       "name": "Como tratar tokens amigáveis ​​sob Furtividade",
       "allow": "Sempre testar Percepção",

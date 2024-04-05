@@ -1,7 +1,8 @@
 # pending
-* Added settings to set the default Hidden and Spot effect icons
+* GM can select the default Hidden and Spot effect icons
 * Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active
 * Dnd5e: Removed `DimIsBright` optional setting
+* Dnd5e: Disadvantaged perception roll is now hidden from DSN
 
 # v3.14.4
 * Fixed the mangled door import code
