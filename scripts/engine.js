@@ -50,7 +50,7 @@ export default class Engine {
     }
   }
 
-  isHidden(visionSource, tgtToken) {
+  isHidden(visionSource, tgtToken, detectionMode=undefined) {
     if (tgtToken?.disposition === visionSource.object.document?.disposition) {
       const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
       if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return false;
@@ -59,7 +59,7 @@ export default class Engine {
     const hiddenEffect = this.findHiddenEffect(tgtToken?.actor);
     if (!hiddenEffect) return false;
 
-    return !this.canDetectHidden(visionSource, hiddenEffect, tgtToken);
+    return !this.canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode);
   }
 
   findHiddenEffect(actor) {

@@ -85,7 +85,7 @@
       },
       "dimIsBright": {
         "name": "Trate Penumbra como Luz Plena com Visão no Escuro",
-        "hint": "Se habilitado, o comportamento será o mesmo do Foundry e se desabilitado, será como as regras da 5E. Instale o módulo 'Adequate Vision' se deseja que os visuais do Foundry correspondam mais às regras 5E."
+        "hint": "Se habilitado, o comportamento será o mesmo do Foundry e se desabilitado, será como as regras da 5E"
       },
       "ignorePassiveFloor": {
         "name": "Ignore o valor mínimo de Percepção Passiva para verificações ativas",

@@ -6,24 +6,6 @@ class Engine5e extends Engine {
   constructor() {
     super();
 
-    game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
-      name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.tokenLighting.hint"),
-      scope: 'world',
-      config: true,
-      type: Boolean,
-      default: false,
-    });
-
-    game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
-      name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
-      scope: 'world',
-      config: true,
-      type: Boolean,
-      default: false,
-    });
-
     game.settings.register(Stealthy.MODULE_ID, 'ignorePassiveFloor', {
       name: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.name"),
       hint: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.hint"),
@@ -33,42 +15,10 @@ class Engine5e extends Engine {
       default: false,
     });
 
-    const v10 = Math.floor(game.version) < 11;
-    game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
-      name: game.i18n.localize("stealthy.dnd5e.dark.key"),
-      scope: 'world',
-      config: true,
-      type: String,
-      default: v10 ? 'stealthy.dnd5e.dark.label' : 'stealthy.dnd5e.dark.name',
-      onChange: value => {
-        debouncedReload();
-      }
-    });
-
-    game.settings.register(Stealthy.MODULE_ID, 'dimLabel', {
-      name: game.i18n.localize("stealthy.dnd5e.dim.key"),
-      scope: 'world',
-      config: true,
-      type: String,
-      default: v10 ? 'stealthy.dnd5e.dim.label' : 'stealthy.dnd5e.dim.name',
-      onChange: value => {
-        debouncedReload();
-      }
-    });
-
-    game.settings.register(Stealthy.MODULE_ID, 'dimIsBright', {
-      name: game.i18n.localize("stealthy.dnd5e.dimIsBright.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.dimIsBright.hint"),
-      scope: 'world',
-      config: true,
-      type: Boolean,
-      default: false,
-    });
-
     game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
       name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
       scope: 'world',
-      config: true,
+      config: false,
       type: String,
       choices: {
         'allow': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.allow"),
@@ -78,7 +28,77 @@ class Engine5e extends Engine {
       default: 'inCombat'
     });
 
-    Hooks.on('dnd5e.rollSkill', async (actor, roll, skill) => {
+    const tlcActive = game.modules.get("tokenlightcondition")?.active && !game.modules.get("vision-5e")?.active;
+
+    game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
+      name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
+      hint: game.i18n.localize("stealthy.dnd5e.tokenLighting.hint"),
+      scope: 'world',
+      config: tlcActive,
+      type: Boolean,
+      default: false,
+    });
+
+    if (tlcActive) {
+      game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
+        name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
+        hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false,
+      });
+
+      const v10 = Math.floor(game.version) < 11;
+      game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
+        name: game.i18n.localize("stealthy.dnd5e.dark.key"),
+        scope: 'world',
+        config: true,
+        type: String,
+        default: v10 ? 'stealthy.dnd5e.dark.label' : 'stealthy.dnd5e.dark.name',
+        onChange: value => {
+          debouncedReload();
+        }
+      });
+
+      game.settings.register(Stealthy.MODULE_ID, 'dimLabel', {
+        name: game.i18n.localize("stealthy.dnd5e.dim.key"),
+        scope: 'world',
+        config: true,
+        type: String,
+        default: v10 ? 'stealthy.dnd5e.dim.label' : 'stealthy.dnd5e.dim.name',
+        onChange: value => {
+          debouncedReload();
+        }
+      });
+
+      game.settings.register(Stealthy.MODULE_ID, 'dimIsBright', {
+        name: game.i18n.localize("stealthy.dnd5e.dimIsBright.name"),
+        hint: game.i18n.localize("stealthy.dnd5e.dimIsBright.hint"),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false,
+      });
+
+      this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));
+      this.darkLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'darkLabel'));
+      Stealthy.log(`dimLabel='${this.dimLabel}', darkLabel='${this.darkLabel}'`);
+
+      Hooks.on('renderSettingsConfig', (app, html, data) => {
+        $('<div>').addClass('form-group group-header')
+          .html('Token Lighting')
+          .insertBefore($('[name="stealthy.tokenLighting"]')
+            .parents('div.form-group:first'));
+      });
+    }
+    else {
+      Hooks.once('ready', () => {
+        game.settings.set(Stealthy.MODULE_ID, 'tokenLighting', false);
+      });
+    }
+
+    Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
       if (skill === 'ste') {
         await this.rollStealth(actor, roll);
       }
@@ -87,15 +107,10 @@ class Engine5e extends Engine {
       }
     });
 
-    this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));
-    this.darkLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'darkLabel'));
-
-    Stealthy.log(`dimLabel='${this.dimLabel}', darkLabel='${this.darkLabel}'`);
-
     Hooks.on('renderSettingsConfig', (app, html, data) => {
       $('<div>').addClass('form-group group-header')
         .html(game.i18n.localize("stealthy.dnd5e.name"))
-        .insertBefore($('[name="stealthy.tokenLighting"]')
+        .insertBefore($('[name="stealthy.ignorePassiveFloor"]')
           .parents('div.form-group:first'));
     });
   }
@@ -130,7 +145,7 @@ class Engine5e extends Engine {
               const tgtToken = target?.document;
               if (!(tgtToken instanceof TokenDocument)) break;
               const engine = stealthy.engine;
-              if (engine.isHidden(visionSource, tgtToken)) return false;
+              if (engine.isHidden(visionSource, tgtToken, mode)) return false;
           }
           return wrapped(visionSource, target);
         },
@@ -152,7 +167,7 @@ class Engine5e extends Engine {
             const tgtToken = target?.document;
             if (!(tgtToken instanceof TokenDocument)) break;
             const engine = stealthy.engine;
-            if (engine.isHidden(visionSource, tgtToken)) return false;
+            if (engine.isHidden(visionSource, tgtToken, 'CONFIG.Canvas.detectionModes.hearing._canDetect')) return false;
         }
         return wrapped(visionSource, target);
       },
@@ -167,7 +182,7 @@ class Engine5e extends Engine {
 
   static LIGHT_LABELS = ['dark', 'dim', 'bright'];
 
-  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode) {
     const srcToken = visionSource.object.document;
     const source = srcToken?.actor;
     const stealth = hiddenEffect.flags.stealthy?.hidden ?? target.actor.system.skills.ste.passive;
@@ -187,7 +202,7 @@ class Engine5e extends Engine {
     }
 
     if (perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
+      Stealthy.log(`${detectionMode}: "${visionSource.object.name}"'s ${perception} can't detect "${tgtToken.name}"'s ${stealth}`);
       return false;
     }
 
@@ -252,7 +267,6 @@ class Engine5e extends Engine {
       }
       else {
         let disadvantageRoll = await new Roll(`1d20`).evaluate({ async: true });
-        game.dice3d?.showForRoll(disadvantageRoll);
         const delta = dice.results[0].result - disadvantageRoll.total;
         if (delta > 0) {
           perception.disadvantaged -= delta;
@@ -302,10 +316,11 @@ class Engine5e extends Engine {
     debugData.lightLevel = Engine5e.LIGHT_LABELS[lightBand];
 
     // Adjust the light band based on conditions
+    debugData.id = visionSource.visionMode?.id;
     if (visionSource.visionMode?.id === 'darkvision') {
       if (game.settings.get(Stealthy.MODULE_ID, 'dimIsBright')) lightBand = lightBand + 1;
       else if (!lightBand) lightBand = 1;
-      debugData.foundryDarkvision = Engine5e.LIGHT_LABELS[lightBand];
+      debugData.adjustedLightLevel = Engine5e.LIGHT_LABELS[lightBand];
     }
 
     // Extract the normal perception values from the source
@@ -325,25 +340,23 @@ class Engine5e extends Engine {
     // dark = fail, dim = disadvantage, bright = normal
     if (lightBand <= 0) {
       perception = -100;
-      debugData.cantSee = perception;
     }
     else if (lightBand === 1) {
       let passiveDisadv = Engine5e.GetPassivePerceptionWithDisadvantage(source);
+      debugData.passiveDisadv = passiveDisadv;
       if (active !== undefined) {
         value = spotPair?.disadvantaged ?? value - 5;
         debugData.activeDisadv = value;
       }
       else {
         value = passiveDisadv;
-        debugData.passiveDisadv = value;
       }
       perception = (ignorePassiveFloor) ? value : Math.max(value, passiveDisadv);
-      debugData.seesDim = perception;
     }
     else {
       perception = (ignorePassiveFloor) ? value : Math.max(value, passivePrc);
-      debugData.seesBright = perception;
     }
+    debugData.perception = perception;
 
     Stealthy.log('adjustForLightingConditions5e', debugData);
     return perception;

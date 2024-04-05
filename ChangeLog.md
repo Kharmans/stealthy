@@ -1,3 +1,6 @@
+# pending
+* Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active and the `Vision 5e` module is NOT active
+
 # v3.14.3
 * Dnd5e: Forgot to add checks to `basicSight` in vision-5e
 
