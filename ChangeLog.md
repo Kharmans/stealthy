@@ -1,5 +1,6 @@
-# pending
-* GM can select the default Hidden and Spot effect icons
+# v3.15.0
+* GM can select the default Hidden and Spot effect icons in the game settings
+* GM can choose to allow players to see their stealth and perception values in the Token HUD using the game settings.
 * Dnd5e: Disadvantaged perception in dim lighting is only available if the `Token Light Condition` module is active
 * Dnd5e: Removed `DimIsBright` optional setting
 * Dnd5e: Disadvantaged perception roll is now hidden from DSN
