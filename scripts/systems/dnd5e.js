@@ -87,15 +87,15 @@ class Engine5e extends Engine {
           game.settings.set(Stealthy.MODULE_ID, 'spotPair', false);
         });
       }
+    });
 
-      Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
-        if (skill === 'ste') {
-          await this.rollStealth(actor, roll);
-        }
-        else if (skill === 'prc') {
-          await this.rollPerception(actor, roll);
-        }
-      });
+    Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
+      if (skill === 'ste') {
+        await this.rollStealth(actor, roll);
+      }
+      else if (skill === 'prc') {
+        await this.rollPerception(actor, roll);
+      }
     });
 
     Hooks.on('renderSettingsConfig', (app, html, data) => {
@@ -119,25 +119,35 @@ class Engine5e extends Engine {
         'basicSight',
         'devilsSight',
         'etherealSight',
+        'hearing',
         'lightPerception',
         'seeAll',
         'seeInvisibility',
         'witchSight',
       ];
       for (const mode of sightModes) {
-        console.log(`Stealthy | patching ${mode}`);
+        Stealthy.log(`patching ${mode}`);
         libWrapper.register(
           Stealthy.MODULE_ID,
           `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
           function (wrapped, visionSource, target) {
             switch (this.type) {
               case DetectionMode.DETECTION_TYPES.SIGHT:
+              case DetectionMode.DETECTION_TYPES.SOUND:
                 const srcToken = visionSource.object.document;
-                if (!(srcToken instanceof TokenDocument)) break;
-                const tgtToken = target?.document;
-                if (!(tgtToken instanceof TokenDocument)) break;
                 const engine = stealthy.engine;
-                if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+                if (target instanceof DoorControl) {
+                  if (!engine.canSpotDoor(target, srcToken)) return false;
+                }
+                else {
+                  const tgtToken = target?.document;
+                  if (tgtToken instanceof TokenDocument) {
+                    if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+                  }
+                  // else {
+                  //   Stealthy.log(`Don't know how to handle`, tgtToken);
+                  // }
+                }
             }
             return wrapped(visionSource, target);
           },
@@ -145,27 +155,6 @@ class Engine5e extends Engine {
           { perf_mode: libWrapper.PERF_FAST }
         );
       }
-
-      // Lastly, give Stealthy access to the hearing checks
-      Stealthy.log(`patching hearing`);
-      libWrapper.register(
-        Stealthy.MODULE_ID,
-        'CONFIG.Canvas.detectionModes.hearing._canDetect',
-        function (wrapped, visionSource, target) {
-          switch (this.type) {
-            case DetectionMode.DETECTION_TYPES.SOUND:
-              const srcToken = visionSource.object.document;
-              if (!(srcToken instanceof TokenDocument)) break;
-              const tgtToken = target?.document;
-              if (!(tgtToken instanceof TokenDocument)) break;
-              const engine = stealthy.engine;
-              if (engine.isHidden(visionSource, tgtToken, 'hearing')) return false;
-          }
-          return wrapped(visionSource, target);
-        },
-        libWrapper.MIXED,
-        { perf_mode: libWrapper.PERF_FAST }
-      );
     });
   }
 

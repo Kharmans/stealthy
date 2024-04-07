@@ -1,5 +1,7 @@
 # pending
 * Shuffled some code to use the `init` hook rather than the `setup` hook
+* Unified Stealthy's handling of door controls with actor tokens
+* Open doors count as unhidden
 
 # v3.15.1
 * Fixed an issue where a setting was missing if TLC wasn't installed.

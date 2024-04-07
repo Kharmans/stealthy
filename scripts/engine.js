@@ -44,11 +44,16 @@ export default class Engine {
           case DetectionMode.DETECTION_TYPES.SIGHT:
           case DetectionMode.DETECTION_TYPES.SOUND:
             const srcToken = visionSource.object.document;
-            if (!(srcToken instanceof TokenDocument)) break;
-            const tgtToken = target?.document;
-            if (!(tgtToken instanceof TokenDocument)) break;
             const engine = stealthy.engine;
-            if (engine.isHidden(visionSource, tgtToken)) return false;
+            if (target instanceof DoorControl) {
+              if (!engine.canSpotDoor(target, visionSource)) return false;
+            }
+            else {
+              const tgtToken = target?.document;
+              if (tgtToken instanceof TokenDocument) {
+                if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+              }
+            }
         }
         return wrapped(visionSource, target);
       },
@@ -57,7 +62,7 @@ export default class Engine {
     );
   }
 
-  isHidden(visionSource, tgtToken, detectionMode=undefined) {
+  isHidden(visionSource, tgtToken, detectionMode = undefined) {
     if (tgtToken?.disposition === visionSource.object.document?.disposition) {
       const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
       if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return false;
@@ -262,8 +267,17 @@ export default class Engine {
     stealthy.socket.executeForEveryone('RefreshPerception');
   }
 
-  canSpotDoor(doorControl, token) {
-    const stealth = doorControl.wall.document.flags.stealthy.stealth;
+  canSpotDoor(doorControl, visionSource) {
+    const token = visionSource.object.document;
+    const door = doorControl.wall.document;
+    if (door.ds == 1) return true;
+    const stealthyFlags = door.flags?.stealthy;
+    if (!stealthyFlags) return true;
+    const maxRange = stealthyFlags?.maxRange ?? Infinity;
+    const ray = new Ray(doorControl.center, visionSource.object.center);
+    const distance = canvas.grid.measureDistances([{ ray }])[0];
+    if (distance > maxRange) return false;
+    const stealth = stealthyFlags.stealth;
     const actor = token.actor;
     const { value: perception } = this.getSpotFlagAndValue(actor, this.findSpotEffect(actor));
     return perception >= stealth;

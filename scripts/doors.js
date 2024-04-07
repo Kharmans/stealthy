@@ -5,16 +5,6 @@ export default class Doors {
   static initialize() {
     libWrapper.register(
       Stealthy.MODULE_ID,
-      'DoorControl.prototype.isVisible',
-      function (wrapped) {
-        if (!wrapped()) return false;
-        return Doors.CanDisplayDoorControl(this);
-      },
-      libWrapper.MIXED
-    );
-
-    libWrapper.register(
-      Stealthy.MODULE_ID,
       "WallConfig.prototype._updateObject",
       async function (wrapped, event, formData) {
         const v10 = Math.floor(game.version) < 11;
@@ -32,24 +22,6 @@ export default class Doors {
 
     // Inject custom settings into the wall config diallog
     Hooks.on("renderWallConfig", Doors.RenderHiddenDoor);
-  }
-
-  static CanDisplayDoorControl(doorControl) {
-    const wallDoc = doorControl.wall.document;
-    if (wallDoc.door !== CONST.WALL_DOOR_TYPES.DOOR) return true;
-    const stealth = wallDoc.flags.stealthy?.stealth;
-    if (stealth == null) return true;
-    let tokens = canvas.tokens.controlled;
-    if (!tokens.length) return game.user.isGM;
-
-    const maxRange = doorControl.wall.document.flags.stealthy?.maxRange ?? Infinity;
-    for (const token of tokens) {
-      const ray = new Ray(doorControl.center, token.center);
-      const distance = canvas.grid.measureDistances([{ ray }])[0];
-      if (distance > maxRange) continue;
-      if (stealthy.engine.canSpotDoor(doorControl, token)) return true;
-    }
-    return false;
   }
 
   static async UpdateHiddenDoor(wallConfig, formData) {
