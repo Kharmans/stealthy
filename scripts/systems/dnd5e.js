@@ -40,16 +40,16 @@ class Engine5e extends Engine {
       default: false,
     });
 
-    if (tlcActive) {
-      game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
-        name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
-        hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
-        scope: 'world',
-        config: true,
-        type: Boolean,
-        default: false,
-      });
+    game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
+      name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
+      hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
+      scope: 'world',
+      config: tlcActive,
+      type: Boolean,
+      default: false,
+    });
 
+    if (tlcActive) {
       const v10 = Math.floor(game.version) < 11;
       game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
         name: game.i18n.localize("stealthy.dnd5e.dark.key"),

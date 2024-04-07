@@ -1,3 +1,6 @@
+# v3.15.1
+* Fixed an issue where a setting was missing if TLC wasn't installed.
+
 # v3.15.0
 * GM can select the default Hidden and Spot effect icons in the game settings
 * GM can choose to allow players to see their stealth and perception values in the Token HUD using the game settings.
