@@ -2,15 +2,17 @@ export class Stealthy {
 
   static MODULE_ID = 'stealthy';
 
-  constructor(makeEngine) {
-    this.engine = makeEngine();
-    this.engine.patchFoundry();
-    this.activeSpot = game.settings.get(Stealthy.MODULE_ID, 'activeSpot');
+  constructor(engine) {
+    this.engine = engine;
     this.socket = null;
-    this.socket = socketlib.registerModule(Stealthy.MODULE_ID);
-    this.socket.register('ToggleActiveSpot', Stealthy.ToggleActiveSpot);
-    this.socket.register('GetActiveSpot', Stealthy.GetActiveSpot);
-    this.socket.register('RefreshPerception', Stealthy.RefreshPerception);
+    this.engine.patchFoundry();
+    Hooks.once('setup', () => {
+      this.activeSpot = game.settings.get(Stealthy.MODULE_ID, 'activeSpot');
+      this.socket = socketlib.registerModule(Stealthy.MODULE_ID);
+      this.socket.register('ToggleActiveSpot', Stealthy.ToggleActiveSpot);
+      this.socket.register('GetActiveSpot', Stealthy.GetActiveSpot);
+      this.socket.register('RefreshPerception', Stealthy.RefreshPerception);
+    });
   }
 
   getSpotValue(actor) {
@@ -54,12 +56,6 @@ export class Stealthy {
 
   static CONSOLE_COLORS = ['background: #222; color: #80ffff', 'color: #fff'];
   static engines = {};
-
-  static RegisterEngine(id, makeEngine) {
-    if (id !== game.system.id) return;
-    console.log(`stealthy | Registering Stealth engine for '${id}'`);
-    Stealthy.engines[id] = makeEngine;
-  }
 
   static log(format, ...args) {
     const level = game.settings.get(Stealthy.MODULE_ID, 'logLevel');

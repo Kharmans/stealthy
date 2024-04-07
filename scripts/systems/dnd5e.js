@@ -7,92 +7,94 @@ class Engine5e extends Engine {
   constructor() {
     super();
 
-    game.settings.register(Stealthy.MODULE_ID, 'ignorePassiveFloor', {
-      name: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.hint"),
-      scope: 'world',
-      config: true,
-      type: Boolean,
-      default: false,
-    });
-
-    game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
-      name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
-      scope: 'world',
-      config: false,
-      type: String,
-      choices: {
-        'allow': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.allow"),
-        'inCombat': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.inCombat"),
-        'ignore': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.ignore")
-      },
-      default: 'inCombat'
-    });
-
-    const tlcActive = game.modules.get("tokenlightcondition")?.active;
-
-    game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
-      name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.tokenLighting.hint"),
-      scope: 'world',
-      config: tlcActive,
-      type: Boolean,
-      default: false,
-    });
-
-    game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
-      name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
-      scope: 'world',
-      config: tlcActive,
-      type: Boolean,
-      default: false,
-    });
-
-    if (tlcActive) {
-      const v10 = Math.floor(game.version) < 11;
-      game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
-        name: game.i18n.localize("stealthy.dnd5e.dark.key"),
+    Hooks.once('setup', () => {
+      game.settings.register(Stealthy.MODULE_ID, 'ignorePassiveFloor', {
+        name: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.name"),
+        hint: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.hint"),
         scope: 'world',
-        requiresReload: true,
         config: true,
-        type: String,
-        default: v10 ? 'stealthy.dnd5e.dark.label' : 'stealthy.dnd5e.dark.name',
+        type: Boolean,
+        default: false,
       });
 
-      game.settings.register(Stealthy.MODULE_ID, 'dimLabel', {
-        name: game.i18n.localize("stealthy.dnd5e.dim.key"),
+      game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
+        name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
         scope: 'world',
-        requiresReload: true,
-        config: true,
+        config: false,
         type: String,
-        default: v10 ? 'stealthy.dnd5e.dim.label' : 'stealthy.dnd5e.dim.name',
+        choices: {
+          'allow': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.allow"),
+          'inCombat': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.inCombat"),
+          'ignore': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.ignore")
+        },
+        default: 'inCombat'
       });
 
-      this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));
-      this.darkLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'darkLabel'));
-      Stealthy.log(`dimLabel='${this.dimLabel}', darkLabel='${this.darkLabel}'`);
+      const tlcActive = game.modules.get("tokenlightcondition")?.active;
 
-      Hooks.on('renderSettingsConfig', (app, html, data) => {
-        $('<div>').addClass('form-group group-header')
-          .html('Token Lighting')
-          .insertBefore($('[name="stealthy.tokenLighting"]')
-            .parents('div.form-group:first'));
+      game.settings.register(Stealthy.MODULE_ID, 'tokenLighting', {
+        name: game.i18n.localize("stealthy.dnd5e.tokenLighting.name"),
+        hint: game.i18n.localize("stealthy.dnd5e.tokenLighting.hint"),
+        scope: 'world',
+        config: tlcActive,
+        type: Boolean,
+        default: false,
       });
-    }
-    else {
-      Hooks.once('ready', () => {
-        game.settings.set(Stealthy.MODULE_ID, 'tokenLighting', false);
-      });
-    }
 
-    Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
-      if (skill === 'ste') {
-        await this.rollStealth(actor, roll);
+      game.settings.register(Stealthy.MODULE_ID, 'spotPair', {
+        name: game.i18n.localize("stealthy.dnd5e.spotPair.name"),
+        hint: game.i18n.localize("stealthy.dnd5e.spotPair.hint"),
+        scope: 'world',
+        config: tlcActive,
+        type: Boolean,
+        default: false,
+      });
+
+      if (tlcActive) {
+        const v10 = Math.floor(game.version) < 11;
+        game.settings.register(Stealthy.MODULE_ID, 'darkLabel', {
+          name: game.i18n.localize("stealthy.dnd5e.dark.key"),
+          scope: 'world',
+          requiresReload: true,
+          config: true,
+          type: String,
+          default: v10 ? 'stealthy.dnd5e.dark.label' : 'stealthy.dnd5e.dark.name',
+        });
+
+        game.settings.register(Stealthy.MODULE_ID, 'dimLabel', {
+          name: game.i18n.localize("stealthy.dnd5e.dim.key"),
+          scope: 'world',
+          requiresReload: true,
+          config: true,
+          type: String,
+          default: v10 ? 'stealthy.dnd5e.dim.label' : 'stealthy.dnd5e.dim.name',
+        });
+
+        this.dimLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'dimLabel'));
+        this.darkLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'darkLabel'));
+        Stealthy.log(`dimLabel='${this.dimLabel}', darkLabel='${this.darkLabel}'`);
+
+        Hooks.on('renderSettingsConfig', (app, html, data) => {
+          $('<div>').addClass('form-group group-header')
+            .html('Token Lighting')
+            .insertBefore($('[name="stealthy.tokenLighting"]')
+              .parents('div.form-group:first'));
+        });
       }
-      else if (skill === 'prc') {
-        await this.rollPerception(actor, roll);
+      else {
+        Hooks.once('ready', () => {
+          game.settings.set(Stealthy.MODULE_ID, 'tokenLighting', false);
+        });
       }
+
+      Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
+        if (skill === 'ste') {
+          await this.rollStealth(actor, roll);
+        }
+        else if (skill === 'prc') {
+          await this.rollPerception(actor, roll);
+        }
+      });
     });
 
     Hooks.on('renderSettingsConfig', (app, html, data) => {
@@ -111,63 +113,61 @@ class Engine5e extends Engine {
     }
 
     // Pick the sight modes in vision-5e that we want Stealthy to affect
-    const sightModes = [
-      'basicSight',
-      'devilsSight',
-      'etherealSight',
-      'lightPerception',
-      'seeAll',
-      'seeInvisibility',
-      'witchSight',
-    ];
-    for (const mode of sightModes) {
-      Stealthy.log(`patching ${mode}`);
+    Hooks.once('setup', () => {
+      const sightModes = [
+        'basicSight',
+        'devilsSight',
+        'etherealSight',
+        'lightPerception',
+        'seeAll',
+        'seeInvisibility',
+        'witchSight',
+      ];
+      for (const mode of sightModes) {
+        console.log(`Stealthy | patching ${mode}`);
+        libWrapper.register(
+          Stealthy.MODULE_ID,
+          `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+          function (wrapped, visionSource, target) {
+            switch (this.type) {
+              case DetectionMode.DETECTION_TYPES.SIGHT:
+                const srcToken = visionSource.object.document;
+                if (!(srcToken instanceof TokenDocument)) break;
+                const tgtToken = target?.document;
+                if (!(tgtToken instanceof TokenDocument)) break;
+                Stealthy.logIfDebug(`testing ${mode} vs "${tgtToken.name}"`);
+                const engine = stealthy.engine;
+                if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+            }
+            return wrapped(visionSource, target);
+          },
+          libWrapper.MIXED,
+          { perf_mode: libWrapper.PERF_FAST }
+        );
+      }
+
+      // Lastly, give Stealthy access to the hearing checks
+      Stealthy.log(`patching hearing`);
       libWrapper.register(
         Stealthy.MODULE_ID,
-        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+        'CONFIG.Canvas.detectionModes.hearing._canDetect',
         function (wrapped, visionSource, target) {
           switch (this.type) {
-            case DetectionMode.DETECTION_TYPES.SIGHT:
+            case DetectionMode.DETECTION_TYPES.SOUND:
               const srcToken = visionSource.object.document;
               if (!(srcToken instanceof TokenDocument)) break;
               const tgtToken = target?.document;
               if (!(tgtToken instanceof TokenDocument)) break;
-              Stealthy.logIfDebug(`testing ${mode} vs "${tgtToken.name}"`);
+              Stealthy.logIfDebug(`testing hearing vs "${tgtToken.name}"`);
               const engine = stealthy.engine;
-              if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+              if (engine.isHidden(visionSource, tgtToken, 'hearing')) return false;
           }
           return wrapped(visionSource, target);
         },
         libWrapper.MIXED,
         { perf_mode: libWrapper.PERF_FAST }
       );
-    }
-
-    // Lastly, give Stealthy access to the hearing checks
-    Stealthy.log(`patching hearing`);
-    libWrapper.register(
-      Stealthy.MODULE_ID,
-      'CONFIG.Canvas.detectionModes.hearing._canDetect',
-      function (wrapped, visionSource, target) {
-        switch (this.type) {
-          case DetectionMode.DETECTION_TYPES.SOUND:
-            const srcToken = visionSource.object.document;
-            if (!(srcToken instanceof TokenDocument)) break;
-            const tgtToken = target?.document;
-            if (!(tgtToken instanceof TokenDocument)) break;
-            Stealthy.logIfDebug(`testing hearing vs "${tgtToken.name}"`);
-            const engine = stealthy.engine;
-            if (engine.isHidden(visionSource, tgtToken, 'hearing')) return false;
-        }
-        return wrapped(visionSource, target);
-      },
-      libWrapper.MIXED,
-      { perf_mode: libWrapper.PERF_FAST }
-    );
-
-    if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
-      Doors.initialize();
-    }
+    });
   }
 
   static LIGHT_LABELS = ['dark', 'dim', 'bright', 'bright'];
@@ -363,5 +363,10 @@ class Engine5e extends Engine {
 }
 
 Hooks.once('init', () => {
-  Stealthy.RegisterEngine('dnd5e', () => new Engine5e());
+  if (game.system.id === 'dnd5e') {
+    const systemEngine = new Engine5e();
+    if (systemEngine) {
+      window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    }
+  }
 });

@@ -125,14 +125,6 @@ Hooks.once('setup', () => {
     default: true,
   });
 
-  const systemEngine = Stealthy.engines[game.system.id];
-  if (systemEngine) {
-    window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
-  }
-  else {
-    console.error(`Stealthy doesn't yet support system id '${game.system.id}'`);
-  }
-
   Stealthy.log(`Initialized ${moduleVersion}`);
 });
 

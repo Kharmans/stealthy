@@ -11,20 +11,21 @@ export default class Engine {
     // at file scope so that the Stealthy can find the engine during
     // setup
 
-    // Hooks.once('init', () => {
-    //   Stealthy.RegisterEngine('system-id', () => new StealthyNewSystem());
-    // });
-
     this.warnedMissingCE = false;
     this.warnedMissingCUB = false;
-    this.hiddenLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
-    this.spotLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
-    Stealthy.log(`hiddenLabel='${this.hiddenLabel}', spotLabel='${this.spotLabel}'`);
+    Hooks.once('setup', () => {
+      this.hiddenLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
+      this.spotLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
+      Stealthy.log(`hiddenLabel='${this.hiddenLabel}', spotLabel='${this.spotLabel}'`);
+      if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
+        Doors.initialize();
+      }
+    });
   }
 
   patchFoundry() {
     // Generic Detection mode patching
-    Stealthy.log(`patching DetectionMode.prototype._canDetect`);
+    console.log('Stealthy | patchFoundry');
     libWrapper.register(
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',
@@ -45,10 +46,6 @@ export default class Engine {
       libWrapper.MIXED,
       { perf_mode: libWrapper.PERF_FAST }
     );
-
-    if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
-      Doors.initialize();
-    }
   }
 
   isHidden(visionSource, tgtToken, detectionMode=undefined) {
