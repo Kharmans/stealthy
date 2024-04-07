@@ -84,6 +84,7 @@ class Engine5e extends Engine {
       else {
         Hooks.once('ready', () => {
           game.settings.set(Stealthy.MODULE_ID, 'tokenLighting', false);
+          game.settings.set(Stealthy.MODULE_ID, 'spotPair', false);
         });
       }
 
@@ -135,7 +136,6 @@ class Engine5e extends Engine {
                 if (!(srcToken instanceof TokenDocument)) break;
                 const tgtToken = target?.document;
                 if (!(tgtToken instanceof TokenDocument)) break;
-                Stealthy.logIfDebug(`testing ${mode} vs "${tgtToken.name}"`);
                 const engine = stealthy.engine;
                 if (engine.isHidden(visionSource, tgtToken, mode)) return false;
             }
@@ -158,7 +158,6 @@ class Engine5e extends Engine {
               if (!(srcToken instanceof TokenDocument)) break;
               const tgtToken = target?.document;
               if (!(tgtToken instanceof TokenDocument)) break;
-              Stealthy.logIfDebug(`testing hearing vs "${tgtToken.name}"`);
               const engine = stealthy.engine;
               if (engine.isHidden(visionSource, tgtToken, 'hearing')) return false;
           }

@@ -1,3 +1,6 @@
+# pending
+* Shuffled some code to use the `init` hook rather than the `setup` hook
+
 # v3.15.1
 * Fixed an issue where a setting was missing if TLC wasn't installed.
 

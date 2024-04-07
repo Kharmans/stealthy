@@ -11,6 +11,16 @@ export default class Engine {
     // at file scope so that the Stealthy can find the engine during
     // setup
 
+    // Hooks.once('init', () => {
+    //   if (game.system.id === 'system-id') {
+    //     const systemEngine = new system-engine();
+    //     if (systemEngine) {
+    //       window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    //     }
+    //   }
+    // });
+
+
     this.warnedMissingCE = false;
     this.warnedMissingCUB = false;
     Hooks.once('setup', () => {
@@ -37,7 +47,6 @@ export default class Engine {
             if (!(srcToken instanceof TokenDocument)) break;
             const tgtToken = target?.document;
             if (!(tgtToken instanceof TokenDocument)) break;
-            Stealthy.logIfDebug(`testing DetectionMode.prototype._canDetect`);
             const engine = stealthy.engine;
             if (engine.isHidden(visionSource, tgtToken)) return false;
         }
