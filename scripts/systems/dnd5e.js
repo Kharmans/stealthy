@@ -89,7 +89,7 @@ class Engine5e extends Engine {
       }
     });
 
-    Hooks.once('dnd5e.rollSkill', async (actor, roll, skill) => {
+    Hooks.on('dnd5e.rollSkill', async (actor, roll, skill) => {
       if (skill === 'ste') {
         await this.rollStealth(actor, roll);
       }

@@ -1,3 +1,6 @@
+# v3.16.1
+* Fixed a merge error that turned off skill roll hooks after the first one
+
 # v3.16.0
 * Shuffled some code to use the `init` hook rather than the `setup` hook
 * Unified Stealthy's handling of door controls with actor tokens

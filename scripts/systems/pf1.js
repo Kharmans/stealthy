@@ -176,7 +176,6 @@ export class EnginePF1 extends Engine {
           "stealthy": flag
         },
       };
-      Stealthy.log('Effect', effect);
       await actor.createEmbeddedDocuments('Item', [effect]);
     }
     else {
