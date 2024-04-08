@@ -57,23 +57,23 @@ export class Stealthy {
   static CONSOLE_COLORS = ['background: #222; color: #80ffff', 'color: #fff'];
   static engines = {};
 
+  static colorizeOutput(format, ...args) {
+    return [
+      `%cstealthy %c|`,
+      ...Stealthy.CONSOLE_COLORS,
+      format,
+      ...args,
+    ];
+  }
+
   static log(format, ...args) {
     const level = game.settings.get(Stealthy.MODULE_ID, 'logLevel');
     if (level !== 'none') {
 
-      function colorizeOutput(format, ...args) {
-        return [
-          `%cstealthy %c|`,
-          ...Stealthy.CONSOLE_COLORS,
-          format,
-          ...args,
-        ];
-      }
-
       if (level === 'debug')
-        console.debug(...colorizeOutput(format, ...args));
+        console.debug(...Stealthy.colorizeOutput(format, ...args));
       else if (level === 'log')
-        console.log(...colorizeOutput(format, ...args));
+        console.log(...Stealthy.colorizeOutput(format, ...args));
     }
   }
 
@@ -81,16 +81,7 @@ export class Stealthy {
     const level = game.settings.get(Stealthy.MODULE_ID, 'logLevel');
     if (level === 'debug') {
 
-      function colorizeOutput(format, ...args) {
-        return [
-          `%cstealthy %c|`,
-          ...Stealthy.CONSOLE_COLORS,
-          format,
-          ...args,
-        ];
-      }
-
-      console.debug(...colorizeOutput(format, ...args));
+      console.debug(...Stealthy.colorizeOutput(format, ...args));
     }
   }
 
