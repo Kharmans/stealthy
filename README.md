@@ -51,11 +51,9 @@ Doors can have a detection range that will hide the door control until the viewi
 # Systems
 Stealthy supports the following systems (specific notes about a given system are in the [Wiki](https://github.com/Eligarf/stealthy/wiki)):
 - [dnd5e](https://github.com/Eligarf/stealthy/wiki/D&D-5e)
-
-Partial implementations are in progress for these, but aren't yet usable
 - dnd4e
 - [pf1](https://github.com/Eligarf/stealthy/wiki/Pathfinder-1e)
-- [pf2e](https://github.com/Eligarf/stealthy/wiki/Pathfinder-2e)
+- Partial progress on [pf2e](https://github.com/Eligarf/stealthy/wiki/Pathfinder-2e), but it isn't available yet.
 
 # Limitations
 

@@ -1,7 +1,9 @@
-# pending
+# v3.16.0
 * Shuffled some code to use the `init` hook rather than the `setup` hook
 * Unified Stealthy's handling of door controls with actor tokens
-* Open doors count as unhidden
+* Hidden doors that are open don't hide their door control
+* DND4e: updated and working for 0.4.49
+* PF1: updated and working for 9.6
 
 # v3.15.1
 * Fixed an issue where a setting was missing if TLC wasn't installed.
