@@ -107,11 +107,10 @@ class Engine5e extends Engine {
   }
 
   patchFoundry() {
+    super.patchFoundry();
+
     // If vision-5e isn't active, just keep the default behavior
-    if (!game.modules.get("vision-5e")?.active) {
-      super.patchFoundry();
-      return;
-    }
+    if (!game.modules.get("vision-5e")?.active) return;
 
     // Pick the sight modes in vision-5e that we want Stealthy to affect
     Hooks.once('setup', () => {

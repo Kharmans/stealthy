@@ -35,7 +35,8 @@ export default class Engine {
 
   patchFoundry() {
     // Generic Detection mode patching
-    console.log('Stealthy | patchFoundry');
+    const mode = 'detectionMode';
+    console.log(...Stealthy.colorizeOutput(`patching ${mode}`));
     libWrapper.register(
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',
@@ -268,16 +269,23 @@ export default class Engine {
   }
 
   canSpotDoor(doorControl, visionSource) {
-    const token = visionSource.object.document;
+    // Open doors are visible
     const door = doorControl.wall.document;
     if (door.ds == 1) return true;
+
+    // Unhidden doors are visible
     const stealthyFlags = door.flags?.stealthy;
     if (!stealthyFlags) return true;
+
+    // Hidden doors can only be spotted if they are in range
     const maxRange = stealthyFlags?.maxRange ?? Infinity;
     const ray = new Ray(doorControl.center, visionSource.object.center);
     const distance = canvas.grid.measureDistances([{ ray }])[0];
     if (distance > maxRange) return false;
+
+    // Now just compare the perception and the door's stealth
     const stealth = stealthyFlags.stealth;
+    const token = visionSource.object.document;
     const actor = token.actor;
     const { value: perception } = this.getSpotFlagAndValue(actor, this.findSpotEffect(actor));
     return perception >= stealth;
