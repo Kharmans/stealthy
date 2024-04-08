@@ -7,12 +7,11 @@ class Engine4e extends Engine {
     super();
 
     Hooks.once('setup', () => {
-      const usesStealth = `uses ${game.i18n.localize('DND4EBETA.SkillStl')}.`;
-      const usesPerception = `uses ${game.i18n.localize('DND4EBETA.SkillPrc')}.`;
+      const usesStealth = `uses ${game.i18n.localize('DND4E.SkillStl')}.`;
+      const usesPerception = `uses ${game.i18n.localize('DND4E.SkillPrc')}.`;
       Stealthy.log('Localized Chat Tags', { usesStealth, usesPerception });
 
       Hooks.on('createChatMessage', async (message, options, id) => {
-        Stealthy.log('createChatMessage', { message, options, id });
         if (message.flavor.endsWith(usesStealth)) {
           await this.rollStealth(message, options, id);
         }
