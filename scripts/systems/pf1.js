@@ -6,13 +6,15 @@ export class EnginePF1 extends Engine {
   constructor() {
     super();
 
-    game.settings.register(Stealthy.MODULE_ID, 'spotTake10', {
-      name: game.i18n.localize("stealthy.pf1.spotTake10.name"),
-      hint: game.i18n.localize("stealthy.pf1.spotTake10.hint"),
-      scope: 'world',
-      config: true,
-      type: Boolean,
-      default: false,
+    Hooks.once('setup', () => {
+      game.settings.register(Stealthy.MODULE_ID, 'spotTake10', {
+        name: game.i18n.localize("stealthy.pf1.spotTake10.name"),
+        hint: game.i18n.localize("stealthy.pf1.spotTake10.hint"),
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false,
+      });
     });
 
     Hooks.on('pf1ActorRollSkill', async (actor, message, skill) => {
@@ -32,6 +34,49 @@ export class EnginePF1 extends Engine {
     });
   }
 
+  patchFoundry() {
+    super.patchFoundry();
+
+    // Pick the sight modes in vision-5e that we want Stealthy to affect
+    // Hooks.once('setup', () => {
+      const sightModes = [
+        'basicSight',
+        'seeAll',
+        'seeInvisibility',
+      ];
+      for (const mode of sightModes) {
+        console.log(`patching ${mode}`);
+        libWrapper.register(
+          Stealthy.MODULE_ID,
+          `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+          function (wrapped, visionSource, target) {
+            switch (this.type) {
+              case DetectionMode.DETECTION_TYPES.SIGHT:
+              case DetectionMode.DETECTION_TYPES.SOUND:
+                const srcToken = visionSource.object.document;
+                const engine = stealthy.engine;
+                if (target instanceof DoorControl) {
+                  if (!engine.canSpotDoor(target, srcToken)) return false;
+                }
+                else {
+                  const tgtToken = target?.document;
+                  if (tgtToken instanceof TokenDocument) {
+                    if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+                  }
+                  // else {
+                  //   Stealthy.log(`Don't know how to handle`, tgtToken);
+                  // }
+                }
+            }
+            return wrapped(visionSource, target);
+          },
+          libWrapper.MIXED,
+          { perf_mode: libWrapper.PERF_FAST }
+        );
+      }
+    // });
+  }
+
   findHiddenEffect(actor) {
     return actor?.items.find(i => i.name === 'Hidden' && i.system.active);
   }
@@ -40,7 +85,7 @@ export class EnginePF1 extends Engine {
     return actor?.items.find(i => i.name === 'Spot' && i.system.active);
   }
 
-  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode) {
     const source = visionSource.object?.actor;
     const stealth = hiddenEffect.flags.stealthy?.hidden ?? (10 + tgtToken.actor.system.skills.ste.mod);
     const spotEffect = this.findSpotEffect(source);
@@ -48,11 +93,7 @@ export class EnginePF1 extends Engine {
     const perception = spotEffect?.flags.stealthy?.spot
       ?? (spotTake10 ? 10 + source.system.skills.per.mod : undefined);
 
-    if (perception === undefined || perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
-      return false;
-    }
-    return true;
+    return !(perception === undefined || perception <= stealth);
   }
 
   makeHiddenEffectMaker(label) {
@@ -77,58 +118,15 @@ export class EnginePF1 extends Engine {
       const effect = {
         "name": "Hidden",
         "type": "buff",
-        "img": "icons/magic/perception/shadow-stealth-eyes-purple.webp",
+        "img": game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon'),
         "system": {
-          "description": {
-            "value": "",
-            "unidentified": ""
-          },
-          "tags": [],
-          "changes": [],
-          "changeFlags": {
-            "loseDexToAC": false,
-            "noEncumbrance": false,
-            "mediumArmorFullSpeed": false,
-            "heavyArmorFullSpeed": false
-          },
-          "contextNotes": [],
-          "links": {
-            "children": []
-          },
-          "tag": "",
-          "useCustomTag": false,
-          "flags": {
-            "boolean": {},
-            "dictionary": {}
-          },
-          "scriptCalls": [],
           "subType": "temp",
           "active": true,
-          "level": null,
-          "duration": {
-            "value": "",
-            "units": "",
-            "start": 0
-          },
           "hideFromToken": false,
-          "uses": {
-            "per": ""
-          }
         },
-        "effects": [],
-        "folder": null,
         "flags": {
-          "core": {},
           "stealthy": flag
         },
-        "_stats": {
-          "systemId": "pf1",
-          "systemVersion": "9.2",
-          "coreVersion": "11.306",
-          "createdTime": 1690224122722,
-          "modifiedTime": 1690225389387,
-          "lastModifiedBy": "FDk5oLXCkN7Yj8YE"
-        }
       };
       await actor.createEmbeddedDocuments('Item', [effect]);
     }
@@ -155,36 +153,15 @@ export class EnginePF1 extends Engine {
 
   async updateOrCreateSpotEffect(actor, flag) {
     let spot = this.findSpotEffect(actor);
+
+    // PF1 buffs can be disabled, if so, look for one already on the actor
     if (!spot) spot = actor?.items.find(i => i.name === 'Spot');
     if (!spot) {
       const effect = {
         "name": "Spot",
         "type": "buff",
-        "img": "systems/pf2e/icons/spells/anticipate-peril.webp",
+        "img": game.settings.get(Stealthy.MODULE_ID, 'spotIcon'),
         "system": {
-          "description": {
-            "value": "",
-            "unidentified": ""
-          },
-          "tags": [],
-          "changes": [],
-          "changeFlags": {
-            "loseDexToAC": false,
-            "noEncumbrance": false,
-            "mediumArmorFullSpeed": false,
-            "heavyArmorFullSpeed": false
-          },
-          "contextNotes": [],
-          "links": {
-            "children": []
-          },
-          "tag": "",
-          "useCustomTag": false,
-          "flags": {
-            "boolean": {},
-            "dictionary": {}
-          },
-          "scriptCalls": [],
           "subType": "temp",
           "active": true,
           "level": null,
@@ -194,25 +171,12 @@ export class EnginePF1 extends Engine {
             "start": 0
           },
           "hideFromToken": false,
-          "uses": {
-            "per": ""
-          }
         },
-        "effects": [],
-        "folder": null,
         "flags": {
-          "core": {},
           "stealthy": flag
         },
-        "_stats": {
-          "systemId": "pf1",
-          "systemVersion": "9.2",
-          "coreVersion": "11.306",
-          "createdTime": 1690223875160,
-          "modifiedTime": 1690227032032,
-          "lastModifiedBy": "FDk5oLXCkN7Yj8YE"
-        },
       };
+      Stealthy.log('Effect', effect);
       await actor.createEmbeddedDocuments('Item', [effect]);
     }
     else {
@@ -256,5 +220,10 @@ export class EnginePF1 extends Engine {
 }
 
 Hooks.once('init', () => {
-  Stealthy.RegisterEngine('pf1', () => new EnginePF1());
+  if (game.system.id === 'pf1') {
+    const systemEngine = new EnginePF1();
+    if (systemEngine) {
+      window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    }
+  }
 });

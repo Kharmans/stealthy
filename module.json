@@ -28,6 +28,13 @@
         "compatibility": {
           "verified": "3.1.1"
         }
+      },
+      {
+        "id": "pf1",
+        "type": "system",
+        "compatibility": {
+          "verified": "9.6"
+        }
       }
     ],
     "requires": [
@@ -49,7 +56,8 @@
     "scripts/stealthy.js",
     "scripts/hooks.js",
     "scripts/systems/dnd4e.js",
-    "scripts/systems/dnd5e.js"
+    "scripts/systems/dnd5e.js",
+    "scripts/systems/pf1.js"
   ],
   "styles": [
     "styles/stealthy.css"
