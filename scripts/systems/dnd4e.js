@@ -6,17 +6,20 @@ class Engine4e extends Engine {
   constructor() {
     super();
 
-    const usesStealth = `uses ${game.i18n.localize('DND4EBETA.SkillStl')}.`;
-    const usesPerception = `uses ${game.i18n.localize('DND4EBETA.SkillPrc')}.`;
-    Stealthy.log('Localized Chat Tags', { usesStealth, usesPerception });
+    Hooks.once('setup', () => {
+      const usesStealth = `uses ${game.i18n.localize('DND4EBETA.SkillStl')}.`;
+      const usesPerception = `uses ${game.i18n.localize('DND4EBETA.SkillPrc')}.`;
+      Stealthy.log('Localized Chat Tags', { usesStealth, usesPerception });
 
-    Hooks.on('createChatMessage', async (message, options, id) => {
-      if (message.flavor.endsWith(usesStealth)) {
-        await this.rollStealth(message, options, id);
-      }
-      else if (message.flavor.endsWith(usesPerception)) {
-        await this.rollPerception(message, options, id);
-      }
+      Hooks.on('createChatMessage', async (message, options, id) => {
+        Stealthy.log('createChatMessage', { message, options, id });
+        if (message.flavor.endsWith(usesStealth)) {
+          await this.rollStealth(message, options, id);
+        }
+        else if (message.flavor.endsWith(usesPerception)) {
+          await this.rollPerception(message, options, id);
+        }
+      });
     });
   }
 
@@ -28,11 +31,7 @@ class Engine4e extends Engine {
     const spotEffect = this.findSpotEffect(source);
     const perception = spotEffect?.flags.stealthy?.spot ?? (10 + source.system.skills.prc.total);
 
-    if (perception <= stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
-      return false;
-    }
-    return true;
+    return  perception > stealth;
   }
 
   getHiddenFlagAndValue(actor, effect) {
@@ -67,5 +66,10 @@ class Engine4e extends Engine {
 }
 
 Hooks.once('init', () => {
-  Stealthy.RegisterEngine('dnd4e', () => new Engine4e());
+  if (game.system.id === 'dnd4e') {
+    const systemEngine = new Engine4e();
+    if (systemEngine) {
+      window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    }
+  }
 });
