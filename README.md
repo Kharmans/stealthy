@@ -53,7 +53,7 @@ Stealthy supports the following systems (specific notes about a given system are
 - [dnd5e](https://github.com/Eligarf/stealthy/wiki/D&D-5e)
 - dnd4e
 - [pf1](https://github.com/Eligarf/stealthy/wiki/Pathfinder-1e)
-- Partial progress on [pf2e](https://github.com/Eligarf/stealthy/wiki/Pathfinder-2e), but it isn't available yet.
+- [pf2e](https://github.com/Eligarf/stealthy/wiki/Pathfinder-2e) (no stealth-based token visibility yet)
 
 # Limitations
 
@@ -65,7 +65,6 @@ Stealthy will not automatically remove the Hidden effect - the dnd5e [Skulker](h
 * [socketlib](https://github.com/manuelVo/foundryvtt-socketlib)
 ## Optional modules
 * [Active Token Effects](https://foundryvtt.com/packages/ATL)
-* [Combat Utility Belt](https://foundryvtt.com/packages/combat-utility-belt)
 * [DFreds Convenient Effects](https://foundryvtt.com/packages/dfreds-convenient-effects)
 * [Token Light Condition](https://foundryvtt.com/packages/tokenlightcondition)
 * [Vision5e](https://foundryvtt.com/packages/vision-5e)
