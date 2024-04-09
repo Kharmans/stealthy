@@ -15,25 +15,64 @@ export class EnginePF2e extends Engine {
       });
     }
 
-    // There is probably a better practice for figuring out skill checks in PF2E, but this "works"
-    const stealthTags = [
-      `<strong>${game.i18n.localize('xdy-pf2e-workbench.macros.basicActionMacros.actions.Hide')}</strong>`,
-      `>${game.i18n.format("PF2E.InitiativeWithSkill", { skillName: game.i18n.localize('PF2E.StealthLabel') })}<`,
-    ];
-    const perceptionTags = [
-      `<strong>${game.i18n.localize('xdy-pf2e-workbench.macros.basicActionMacros.actions.Seek')}</strong>`,
-    ];
-    Stealthy.log('Localized Chat Tags', { stealthTags, perceptionTags });
-
     Hooks.on('createChatMessage', async (message, options, id) => {
-      // Stealthy.log("createChatMessage", message);
-      if (stealthTags.some(t => message.flavor.includes(t))) {
-        await this.rollStealth(message, options, id);
-      }
-      else if (perceptionTags.some(t => message.flavor.includes(t))) {
-        await this.rollPerception(message, options, id);
+      // Stealthy.log('createChatMessage', message);
+      const pf2eContext = message.flags.pf2e.context;
+      switch (pf2eContext?.type) {
+        case 'perception-check':
+          if (pf2eContext?.options.includes('action:seek')) {
+            await this.rollPerception(message, options, id);
+          }
+          break;
+        case 'skill-check':
+          const hidden = ['action:hide', 'action:create-a-diversion', 'action:sneak'];
+          if (pf2eContext?.options.some((t) => hidden.includes(t))) {
+            await this.rollStealth(message, options, id);
+          }
+          break;
+        case 'initiative':
+          if (pf2eContext?.domains.includes('stealth')) {
+            await this.rollStealth(message, options, id);
+          }
+          break;
       }
     });
+  }
+
+  patchFoundry() {
+    // Generic Detection mode patching
+
+    const sightModes = [
+      'basicSight',
+      'feelTremor',
+      'hearing',
+      'seeAll',
+      'seeInvisibility',
+    ];
+    for (const mode of sightModes) {
+      console.log(`Stealthy | patching ${mode}`);
+      libWrapper.register(
+        Stealthy.MODULE_ID,
+        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+        function (wrapped, visionSource, target) {
+          Stealthy.log(`testing ${mode}`, { visionSource, target });
+          do {
+            const engine = stealthy.engine;
+            if (target instanceof DoorControl) {
+              if (!engine.canSpotDoor(target, visionSource)) return false;
+              break;
+            }
+            const tgtToken = target?.document;
+            if (tgtToken instanceof TokenDocument) {
+              if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+            }
+          } while (false);
+          return wrapped(visionSource, target);
+        },
+        libWrapper.MIXED,
+        { perf_mode: libWrapper.PERF_FAST }
+      );
+    }
   }
 
   findHiddenEffect(actor) {
@@ -44,17 +83,13 @@ export class EnginePF2e extends Engine {
     return actor?.items.find(i => i.name === 'Seeking');
   }
 
-  canDetectHidden(visionSource, hiddenEffect, tgtToken) {
+  canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode) {
     const stealth = hiddenEffect?.flags?.stealthy?.hidden ?? (10 + tgtToken.actor.system.skills.ste.value);
     const source = visionSource.object?.actor;
-    let seeking = this.findSpotEffect(source);
+    const seeking = this.findSpotEffect(source);
     const perception = seeking?.flags?.stealthy?.spot ?? 10 + source.system.attributes.perception?.value;
 
-    if (perception < stealth) {
-      Stealthy.log(`${visionSource.object.name}'s ${perception} can't detect ${tgtToken.name}'s ${stealth}`);
-      return false;
-    }
-    return true;
+    return perception >= stealth;
   }
 
   makeHiddenEffectMaker(label) {
@@ -126,7 +161,7 @@ export class EnginePF2e extends Engine {
           },
           "unidentified": false
         },
-        "img": "systems/pf2e/icons/spells/anticipate-peril.webp",
+        "img": game.settings.get(Stealthy.MODULE_ID, 'spotIcon'),
         "flags": {
           "stealthy": flag
         },
@@ -154,7 +189,12 @@ export class EnginePF2e extends Engine {
 
   async rollPerception(message, options, id) {
     Stealthy.log('rollPerception', { message, options, id });
-    const check = Number(message.content);
+    let check = Number(message.content);
+
+    // Easier to track for Critical success/failure if we just bump the result by +/- 10
+    const die = message.rolls[0].dice[0];
+    if (die.total == 20) check += 10;
+    else if (die.total == 1) check -= 10;
 
     const token = canvas.tokens.get(message.speaker.token);
     const actor = token.actor;
@@ -176,5 +216,10 @@ export class EnginePF2e extends Engine {
 }
 
 Hooks.once('init', () => {
-  Stealthy.RegisterEngine('pf2e', () => new EnginePF2e());
+  if (game.system.id === 'pf2e') {
+    const systemEngine = new EnginePF2e();
+    if (systemEngine) {
+      window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    }
+  }
 });

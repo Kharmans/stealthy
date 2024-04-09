@@ -39,41 +39,34 @@ export class EnginePF1 extends Engine {
 
     // Pick the sight modes in vision-5e that we want Stealthy to affect
     // Hooks.once('setup', () => {
-      const sightModes = [
-        'basicSight',
-        'seeAll',
-        'seeInvisibility',
-      ];
-      for (const mode of sightModes) {
-        console.log(`patching ${mode}`);
-        libWrapper.register(
-          Stealthy.MODULE_ID,
-          `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
-          function (wrapped, visionSource, target) {
-            switch (this.type) {
-              case DetectionMode.DETECTION_TYPES.SIGHT:
-              case DetectionMode.DETECTION_TYPES.SOUND:
-                const srcToken = visionSource.object.document;
-                const engine = stealthy.engine;
-                if (target instanceof DoorControl) {
-                  if (!engine.canSpotDoor(target, srcToken)) return false;
-                }
-                else {
-                  const tgtToken = target?.document;
-                  if (tgtToken instanceof TokenDocument) {
-                    if (engine.isHidden(visionSource, tgtToken, mode)) return false;
-                  }
-                  // else {
-                  //   Stealthy.log(`Don't know how to handle`, tgtToken);
-                  // }
-                }
+    const sightModes = [
+      'basicSight',
+      'seeAll',
+      'seeInvisibility',
+    ];
+    for (const mode of sightModes) {
+      console.log(`patching ${mode}`);
+      libWrapper.register(
+        Stealthy.MODULE_ID,
+        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+        function (wrapped, visionSource, target) {
+          do {
+            const engine = stealthy.engine;
+            if (target instanceof DoorControl) {
+              if (!engine.canSpotDoor(target, visionSource)) return false;
+              break;
             }
-            return wrapped(visionSource, target);
-          },
-          libWrapper.MIXED,
-          { perf_mode: libWrapper.PERF_FAST }
-        );
-      }
+            const tgtToken = target?.document;
+            if (tgtToken instanceof TokenDocument) {
+              if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+            }
+          } while (false);
+          return wrapped(visionSource, target);
+        },
+        libWrapper.MIXED,
+        { perf_mode: libWrapper.PERF_FAST }
+      );
+    }
     // });
   }
 

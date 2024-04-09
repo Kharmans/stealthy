@@ -41,21 +41,17 @@ export default class Engine {
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',
       function (wrapped, visionSource, target) {
-        switch (this.type) {
-          case DetectionMode.DETECTION_TYPES.SIGHT:
-          case DetectionMode.DETECTION_TYPES.SOUND:
-            const srcToken = visionSource.object.document;
-            const engine = stealthy.engine;
-            if (target instanceof DoorControl) {
-              if (!engine.canSpotDoor(target, visionSource)) return false;
-            }
-            else {
-              const tgtToken = target?.document;
-              if (tgtToken instanceof TokenDocument) {
-                if (engine.isHidden(visionSource, tgtToken, mode)) return false;
-              }
-            }
-        }
+        do {
+          const engine = stealthy.engine;
+          if (target instanceof DoorControl) {
+            if (!engine.canSpotDoor(target, visionSource)) return false;
+            break;
+          }
+          const tgtToken = target?.document;
+          if (tgtToken instanceof TokenDocument) {
+            if (engine.isHidden(visionSource, tgtToken, mode)) return false;
+          }
+        } while (false);
         return wrapped(visionSource, target);
       },
       libWrapper.MIXED,

@@ -35,6 +35,13 @@
         "compatibility": {
           "verified": "9.6"
         }
+      },
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {
+          "verified": "5.15.0"
+        }
       }
     ],
     "requires": [
@@ -57,7 +64,8 @@
     "scripts/hooks.js",
     "scripts/systems/dnd4e.js",
     "scripts/systems/dnd5e.js",
-    "scripts/systems/pf1.js"
+    "scripts/systems/pf1.js",
+    "scripts/systems/pf2e.js"
   ],
   "styles": [
     "styles/stealthy.css"

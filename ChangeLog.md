@@ -1,3 +1,7 @@
+# v3.17.0
+* PF2e: Perception and Stealth roll capturing works again, but still no changes to token visibility based on stealth
+* PF2e: Hidden doors work again
+
 # v3.16.1
 * Fixed a merge error that turned off skill roll hooks after the first one
 
