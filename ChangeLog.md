@@ -1,3 +1,6 @@
+# v3.17.1
+* PF2e: Abandonded Stealthy for PF2e. Use [PF2e Avoid Notice](https://foundryvtt.com/packages/pf2e-avoid-notice) and *Pf2e Perception* instead.
+
 # v3.17.0
 * PF2e: Perception and Stealth roll capturing works again, but still no changes to token visibility based on stealth
 * PF2e: Hidden doors work again

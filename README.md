@@ -53,7 +53,8 @@ Stealthy supports the following systems (specific notes about a given system are
 - [dnd5e](https://github.com/Eligarf/stealthy/wiki/D&D-5e)
 - dnd4e
 - [pf1](https://github.com/Eligarf/stealthy/wiki/Pathfinder-1e)
-- [pf2e](https://github.com/Eligarf/stealthy/wiki/Pathfinder-2e) (no stealth-based token visibility yet)
+
+I've abandoned trying to get this to work on PF2e. Instead, I use *PF2e Perception* and built a new module to help with the stealth-as-initiative vs perception checks: [PF2e Avoid Notice](https://foundryvtt.com/packages/pf2e-avoid-notice) 
 
 # Limitations
 
