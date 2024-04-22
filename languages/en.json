@@ -72,6 +72,10 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
+      "endTurn": {
+        "name": "End Turn",
+        "hint": "End turn if you are owner of the current combatant"
+      },
       "tokenLighting": {
         "name": "Check token lighting conditions",
         "hint": "Check for token effects that indicate lighting condition of the token."

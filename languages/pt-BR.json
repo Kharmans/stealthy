@@ -72,6 +72,10 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
+      "endTurn": {
+        "name": "Fim de Curva",
+        "hint": "Fim de turno se você é dono do atual combatente"
+      },
       "tokenLighting": {
         "name": "Verificar as condições de iluminação dos tokens",
         "hint": "Verifica se há efeitos no token que indicam a condição de iluminação dos tokens."

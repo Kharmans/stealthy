@@ -7,6 +7,21 @@ class Engine5e extends Engine {
   constructor() {
     super();
 
+    game.keybindings.register(Stealthy.MODULE_ID, "endTurn", {
+      name: game.i18n.localize("stealthy.dnd5e.endTurn.name"),
+      hint: game.i18n.localize("stealthy.dnd5e.endTurn.hint"),
+      editable: [
+        { key: "End" }
+      ],
+      onDown: () => {
+        const combat = game.combat;
+        if (!combat?.active) return;
+        const combatant = combat.combatants.get(combat.current.combatantId);
+        if (!combatant?.isOwner) return;
+        return combat.nextTurn();
+      }
+    });
+
     Hooks.once('setup', () => {
       game.settings.register(Stealthy.MODULE_ID, 'ignorePassiveFloor', {
         name: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.name"),

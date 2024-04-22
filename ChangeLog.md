@@ -1,3 +1,6 @@
+# v3.18.0
+* Dnd5e: Kind of random but I Added an 'End Turn' key binding so I don't have to hunt for a button on screen. 
+
 # v3.17.1
 * PF2e: Abandonded Stealthy for PF2e. Use [PF2e Avoid Notice](https://foundryvtt.com/packages/pf2e-avoid-notice) and *Pf2e Perception* instead.
 

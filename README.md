@@ -3,7 +3,8 @@
 ![Foundry Version](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https%3A%2F%2Fraw.githubusercontent.com%2Feligarf%2Fstealthy%2Fdev%2Fmodule.json)
 
 ![Latest Downloads](https://img.shields.io/github/downloads/eligarf/stealthy/latest/total?color=blue&label=latest%20downloads)
-![Total Downloads](https://img.shields.io/github/downloads/eligarf/stealthy/total?color=blue&label=total%20downloads)
+![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fstealthy&colorB=4aa94a)
+
 # Stealthy
 
 A module for [FoundryVTT](https://foundryvtt.com) that adds perception vs stealth testing to Foundry's visibility tests. It filters out any objects with the Hidden condition if the viewing Perception value fails to beat the object's Stealth value.
@@ -47,6 +48,9 @@ Doors can have a detection range that will hide the door control until the viewi
 
 ![secret-doors](https://user-images.githubusercontent.com/16523503/212574216-6cc5b0ad-f432-441e-b11a-f4aa2b15cbd1.gif)
 ![hidden-door](https://user-images.githubusercontent.com/16523503/217671740-41aa7832-d495-49da-a149-948ebb6ccb2a.PNG)
+
+## End Turn keybinding
+It doesn't belong in this module but I want to be able to press the 'End' key to end my turn, and so I added an editable keybinding that will allow owners of the current combatant to do so.
 
 # Systems
 Stealthy supports the following systems (specific notes about a given system are in the [Wiki](https://github.com/Eligarf/stealthy/wiki)):

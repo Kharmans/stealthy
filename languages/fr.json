@@ -72,6 +72,10 @@
     },
     "dnd5e": {
       "name": "Dnd5e",
+      "endTurn": {
+        "name": "Fin du tour",
+        "hint": "Fin du tour si vous êtes propriétaire du combattant actuel"
+      },
       "tokenLighting": {
         "name": "Vérifier les conditions d'éclairage des tokens",
         "hint": "Vérifiez les effets de tokens qui indiquent l'état d'éclairage du token."
