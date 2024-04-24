@@ -1,3 +1,6 @@
+# v3.18.1
+* Update pt-BR.json (thanks Kharmans)
+
 # v3.18.0
 * Dnd5e: Kind of random but I Added an 'End Turn' key binding so I don't have to hunt for a button on screen. 
 
