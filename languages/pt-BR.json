@@ -1,10 +1,8 @@
 {
   "stealthy": {
     "hidden": {
-      "label": "Escondido",
       "name": "Escondido",
-      "description": "Requer teste de Percepção para detectar.",
-      "inputBox": "Teste de Furtividade",
+      "description": "Banked stealth roll",
       "source": "Origem Escondida",
       "preloc": {
         "key": "Chave de localização para rótulo Escondido",
@@ -14,10 +12,8 @@
       "iconhint": "Ícone padrão para o efeito Escondido"
     },
     "spot": {
-      "label": "Percebendo",
       "name": "Percebendo",
-      "description": "Resultado do teste ativo de Percepção.",
-      "inputBox": "Teste de Percepção.",
+      "description": "Banked perception roll",
       "source": "Origem Percebendo",
       "preloc": {
         "key": "Chave de localização para rótulo Percebido"
@@ -25,14 +21,30 @@
       "icon": "Ícone Percebendo",
       "iconhint": "Ícone padrão para o efeito Percebendo"
     },
-    "activeSpot": "Percebendo Passivamente",
+    "bankPerception": "Bank perception rolls",
     "title": "Stealthy",
     "spotHiddenDoors": {
       "name": "Detecção automática de portas escondidas",
       "hint": "Tokens podem identificar portas ocultas se seu teste de Percepção superar o valor furtivo da porta."
     },
     "playerHud": {
-      "name": "Permitir que os jogadores vejam (não editem) valores ocultos e visíveis no HUD do token"
+      "name": "Players can see banked rolls",
+      "hint": "Players can see banked rolls on the token HUD but can't change them"
+    },
+    "exposure": {
+      "name": "Show light exposure",
+      "hint": "Shows the selected token's light exposure on the Token HUD",
+      "bright": "in Bright light",
+      "dim": "in Dim light",
+      "dark": "in Dark"
+    },
+    "stealthToActor": {
+      "name": "Bank stealth rolls to actor",
+      "hint": "Bank stealth rolls in an actor effect/item rather than the token."
+    },
+    "perceptionToActor": {
+      "name": "Bank perception rolls to actor",
+      "hint": "Bank perception rolls in an actor effect/item rather than the token."
     },
     "friendlyStealth": {
       "name": "Como tratar tokens amigáveis ​​sob Furtividade",
@@ -47,13 +59,12 @@
         "beforeLabel": "Não foi possível encontrar o efeito",
         "afterLabel": "no CE, usando o padrão do Stealthy"
       },
-      "cub": {
-        "name": "Combat Utility Belt",
-        "beforeLabel": "Não foi possível encontrar o efeito",
-        "afterLabel": "no CUB, usando o padrão do Stealthy"
-      },
-      "ae": "Stealthy",
-      "min": "Stealthy - apenas um ícone"
+      "ae": "Stealthy (icon and token effect)",
+      "min": "Stealthy (icon only)"
+    },
+    "schema": {
+      "name": "Schema Version",
+      "hint": "Set this to a previous version to force a data migration from the specified version to the current version"
     },
     "logLevel": {
       "name": "Nível de Registro",
@@ -76,23 +87,9 @@
         "name": "Encerrar Turno",
         "hint": "Encerra o turno se você é dono do atual combatente."
       },
-      "tokenLighting": {
-        "name": "Verificar as condições de iluminação dos tokens",
-        "hint": "Verifica se há efeitos no token que indicam a condição de iluminação dos tokens."
-      },
-      "dark": {
-        "label": "Escuridão",
-        "name": "Escuridão",
-        "key": "Chave de localização para rótulo Escuridão."
-      },
-      "dim": {
-        "label": "Penumbra",
-        "name": "Penumbra",
-        "key": "Chave de localização para rótulo Penumbra."
-      },
-      "spotPair": {
-        "name": "Registar desvantagem de Percepção ao rolar um teste",
-        "hint": "Analisa os resultados do teste de Percepção para obter um resultado normal e um com desvantagem, rolando um segundo dado se necessário."
+      "perceptionDisadvantage": {
+        "name": "Perception disadvantage in Dim light",
+        "hint": "Use scene lighting to determine if perception disadvantage applies for tokens with stealth. Uses center X,Y of the token, nothing fancy"
       },
       "ignorePassiveFloor": {
         "name": "Ignore o valor mínimo de Percepção Passiva para verificações ativas",
@@ -103,13 +100,21 @@
         "allow": "Visão Umbral está escondida para Darkvision",
         "inCombat": "Ignore Visão Umbral a menos que esteja em combate",
         "ignore": "Ignorar Visão Umbral"
+      },
+      "stealthKey": {
+        "name": "Stealth skill key",
+        "hint": "Must be a key found in actor.system.skills, default is 'ste'. Used to redirect rolls from a custom skill into the stealth channel, all tooltips/etc will continue to use localize from 'stealth'"
+      },
+      "perceptionKey": {
+        "name": "Perception skill key",
+        "hint": "Must be a key found in actor.system.skills, default is 'prc'. See Stealth skill key hint but substitute perception"
       }
     },
     "pf1": {
       "name": "Pathfinder",
       "spotTake10": {
         "name": "Percepção pegue-10",
-        "hint": "Se nenhum efeito Percebendo estiver ativo, assuma o resultado de Percepção - 10 para o teste de visibilidade. Se desativado, os tokens Escondidos não serão vistos sem um efeito Percebendo ativo."
+        "hint": "If no banked perception roll is available, assume the Perception take-10 result for the visibility test. If disabled, Hidden tokens will not be seen without a banked perception roll."
       }
     },
     "pf2e": {

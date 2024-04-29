@@ -1,8 +1,40 @@
 import { Stealthy } from "./stealthy.js";
 
+function migrate(moduleVersion, oldVersion) {
+
+  // ui.notifications.warn(`Updated Stealthy from ${oldVersion} to ${moduleVersion}`);
+  return moduleVersion;
+}
+
 Hooks.once('setup', () => {
   const module = game.modules.get(Stealthy.MODULE_ID);
   const moduleVersion = module.version;
+
+  game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', {
+    name: game.i18n.localize("stealthy.stealthToActor.name"),
+    hint: game.i18n.localize("stealthy.stealthToActor.hint"),
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: value => {
+      stealthy.stealthToActor = value;
+    }
+  });
+  stealthy.stealthToActor = game.settings.get(Stealthy.MODULE_ID, 'stealthToActor');
+
+  game.settings.register(Stealthy.MODULE_ID, 'perceptionToActor', {
+    name: game.i18n.localize("stealthy.perceptionToActor.name"),
+    hint: game.i18n.localize("stealthy.perceptionToActor.hint"),
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: value => {
+      stealthy.perceptionToActor = value;
+    }
+  });
+  stealthy.perceptionToActor = game.settings.get(Stealthy.MODULE_ID, 'perceptionToActor');
 
   game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', {
     name: game.i18n.localize("stealthy.friendlyStealth.name"),
@@ -19,10 +51,20 @@ Hooks.once('setup', () => {
 
   game.settings.register(Stealthy.MODULE_ID, 'playerHud', {
     name: game.i18n.localize("stealthy.playerHud.name"),
+    name: game.i18n.localize("stealthy.playerHud.hint"),
     scope: 'world',
     config: true,
     type: Boolean,
     default: false,
+  });
+
+  game.settings.register(Stealthy.MODULE_ID, 'exposure', {
+    name: game.i18n.localize("stealthy.exposure.name"),
+    name: game.i18n.localize("stealthy.exposure.hint"),
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: true,
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', {
@@ -38,9 +80,10 @@ Hooks.once('setup', () => {
   let sources = {
     'none': game.i18n.localize("stealthy.source.min"),
     'ae': game.i18n.localize("stealthy.source.ae"),
-    'cub': game.i18n.localize("stealthy.source.cub.name"),
-    'ce': game.i18n.localize("stealthy.source.ce.name")
   };
+  if (game.dfreds?.effectInterface) {
+    sources['ce'] = game.i18n.localize("stealthy.source.ce.name");
+  }
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenSource', {
     name: game.i18n.localize("stealthy.hidden.source"),
@@ -84,25 +127,27 @@ Hooks.once('setup', () => {
     default: 'icons/commodities/biological/eye-blue.webp'
   });
 
-  const v10 = Math.floor(game.version) < 11;
-
   game.settings.register(Stealthy.MODULE_ID, 'hiddenLabel', {
     name: game.i18n.localize("stealthy.hidden.preloc.key"),
     hint: game.i18n.localize("stealthy.hidden.preloc.hint"),
     scope: 'world',
-    requiresReload: true,
     config: true,
     type: String,
-    default: v10 ? 'stealthy.hidden.label' : 'stealthy.hidden.name',
+    default: 'stealthy.hidden.name',
+    onChange: value => {
+      stealthy.engine.hiddenName = value;
+    }
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotLabel', {
     name: game.i18n.localize("stealthy.spot.preloc.key"),
     scope: 'world',
-    requiresReload: true,
     config: true,
     type: String,
-    default: v10 ? 'stealthy.spot.label' : 'stealthy.spot.name',
+    default: 'stealthy.spot.name',
+    onChange: value => {
+      stealthy.engine.spotName = value;
+    }
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'logLevel', {
@@ -118,50 +163,93 @@ Hooks.once('setup', () => {
     default: 'none'
   });
 
+  game.settings.register(Stealthy.MODULE_ID, 'schema', {
+    name: game.i18n.localize(`${Stealthy.MODULE_ID}.schema.name`),
+    hint: game.i18n.localize(`${Stealthy.MODULE_ID}.schema.hint`),
+    scope: 'world',
+    config: true,
+    type: String,
+    default: `${moduleVersion}`,
+    onChange: value => {
+      const newValue = migrate(moduleVersion, value);
+      if (value != newValue) {
+        game.settings.set(MODULE_ID, 'schema', newValue);
+      }
+    }
+  });
+  const schemaVersion = game.settings.get(Stealthy.MODULE_ID, 'schema');
+  if (schemaVersion !== moduleVersion) {
+    Hooks.once('ready', () => {
+      game.settings.set(Stealthy.MODULE_ID, 'schema', migrate(moduleVersion, schemaVersion));
+    });
+  }
+
   game.settings.register(Stealthy.MODULE_ID, 'activeSpot', {
     scope: 'world',
     config: false,
     type: Boolean,
     default: true,
   });
+  stealthy.bankingPerception = game.settings.get(Stealthy.MODULE_ID, 'activeSpot');
 
   Stealthy.log(`Initialized ${moduleVersion}`);
 });
 
+const LIGHT_ICONS = {
+  bright: '<i class="fa-solid fa-circle"></i>',
+  dim: '<i class="fa-solid fa-circle-half-stroke"></i>',
+  dark: '<i class="fa-regular fa-circle"></i>'
+};
+
 Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
-  if (game.user.isGM == true || game.settings.get(Stealthy.MODULE_ID, 'playerHud')) {
-    const token = tokenHUD.object;
-    const actor = token?.actor;
-    const engine = stealthy.engine;
+  const engine = stealthy.engine;
+  const token = tokenHUD.object;
 
-    const hiddenEffect = engine.findHiddenEffect(actor);
-    if (hiddenEffect) {
-      let { flag, value } = engine.getHiddenFlagAndValue(actor, hiddenEffect);
-      const inputBox = $(
-        `<input id="ste_hid_inp_box" title="${game.i18n.localize("stealthy.hidden.inputBox")}" type="text" name="hidden_value_inp_box" value="${value}"></input>`
-      );
-      html.find(".right").append(inputBox);
-      if (game.user.isGM == true) {
-        inputBox.change(async (inputbox) => {
-          if (token === undefined) return;
-          await engine.setHiddenValue(actor, duplicate(hiddenEffect), flag, Number(inputbox.target.value));
-        });
-      }
+  if (game.settings.get(Stealthy.MODULE_ID, 'exposure') && !game.modules.get('tokenlightcondition')?.active) {
+    const exposure = engine.getLightExposure(token) ?? 'dark';
+    const icon = LIGHT_ICONS[exposure];
+    const title = game.i18n.localize(`stealthy.exposure.${exposure}`);
+    html.find(".right").append($(`<div class="control-icon" title="${title}">${icon}</div>`));
+  }
+
+  if (!(game.user.isGM == true) && !game.settings.get(Stealthy.MODULE_ID, 'playerHud')) return;
+  const editMode = game.user.isGM ? '' : 'disabled ';
+
+  let stealthFlag = engine.getStealthFlag(token);
+  if (stealthFlag) {
+    let value = engine.getStealthValue(stealthFlag);
+    const title = game.i18n.localize("stealthy.hidden.description");
+    const inputBox = $(
+      `<input ${editMode}id="ste_hid_inp_box" title="${title}" type="text" name="hidden_value_inp_box" value="${value}"></input>`
+    );
+    html.find(".right").append(inputBox);
+    if (game.user.isGM == true) {
+      inputBox.change(async (inputbox) => {
+        if (token === undefined) return;
+        const newValue = (!inputbox.target.value.length && !stealthy.stealthToActor)
+          ? undefined
+          : Number(inputbox.target.value);
+        await engine.setStealthValue(stealthFlag, newValue);
+      });
     }
+  }
 
-    const spotEffect = engine.findSpotEffect(actor);
-    if (spotEffect) {
-      let { flag, value } = engine.getSpotFlagAndValue(actor, spotEffect);
-      const inputBox = $(
-        `<input id="ste_spt_inp_box" title="${game.i18n.localize("stealthy.spot.inputBox")}" type="text" name="spot_value_inp_box" value="${value}"></input>`
-      );
-      html.find(".left").append(inputBox);
-      if (game.user.isGM == true) {
-        inputBox.change(async (inputbox) => {
-          if (token === undefined) return;
-          await engine.setSpotValue(actor, duplicate(spotEffect), flag, Number(inputbox.target.value));
-        });
-      }
+  let perceptionFlag = engine.getPerceptionFlag(token);
+  if (perceptionFlag && !perceptionFlag?.passive) {
+    let value = engine.getPerceptionValue(perceptionFlag);
+    const title = game.i18n.localize("stealthy.hidden.description");
+    const inputBox = $(
+      `<input ${editMode}id="ste_spt_inp_box" title="${title}" type="text" name="spot_value_inp_box" value="${value}"></input>`
+    );
+    html.find(".left").append(inputBox);
+    if (game.user.isGM == true) {
+      inputBox.change(async (inputbox) => {
+        if (token === undefined) return;
+        const newValue = (!inputbox.target.value.length && !stealthy.perceptionToActor)
+          ? undefined
+          : Number(inputbox.target.value);
+        await engine.setPerceptionValue(perceptionFlag, newValue);
+      });
     }
   }
 });
@@ -170,27 +258,31 @@ Hooks.on('getSceneControlButtons', (controls) => {
   if (!game.user.isGM) return;
   let tokenControls = controls.find(x => x.name === 'token');
   tokenControls.tools.push({
-    icon: 'fa-solid fa-eyes',
-    name: 'stealthy-spotting',
-    title: game.i18n.localize("stealthy.activeSpot"),
+    icon: 'fa-solid fa-piggy-bank',
+    name: 'stealthy-perception-toggle',
+    title: game.i18n.localize("stealthy.bankPerception"),
     toggle: true,
-    active: stealthy.activeSpot,
+    active: stealthy.bankingPerception,
     onClick: (toggled) => {
       game.settings.set(Stealthy.MODULE_ID, 'activeSpot', toggled);
-      stealthy.socket.executeForEveryone('ToggleActiveSpot', toggled);
+      stealthy.socket.executeForEveryone('TogglePerceptionBanking', toggled);
     }
   });
 });
 
 Hooks.on('renderSettingsConfig', (app, html, data) => {
-  $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.general")).insertBefore($('[name="stealthy.friendlyStealth"]').parents('div.form-group:first'));
+  $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.general")).insertBefore($('[name="stealthy.stealthToActor"]').parents('div.form-group:first'));
   $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.advanced")).insertBefore($('[name="stealthy.hiddenLabel"]').parents('div.form-group:first'));
   $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.debug")).insertBefore($('[name="stealthy.logLevel"]').parents('div.form-group:first'));
 });
 
 Hooks.once('ready', async () => {
-  if (!game.modules.get('lib-wrapper')?.active && game.user.isGM)
+  if (!game.user.isGM) {
+    stealthy.bankingPerception = await stealthy.socket.executeAsGM('GetPerceptionBanking');
+    return;
+  }
+
+  if (!game.modules.get('lib-wrapper')?.active) {
     ui.notifications.error("Stealthy requires the 'libWrapper' module. Please install and activate it.");
-  if (!game.user.isGM)
-    stealthy.activeSpot = await stealthy.socket.executeAsGM('GetActiveSpot');
+  }
 });

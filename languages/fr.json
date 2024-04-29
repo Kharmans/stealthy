@@ -1,10 +1,8 @@
 {
   "stealthy": {
     "hidden": {
-      "label": "Caché",
       "name": "Caché",
-      "description": "Nécessite un test de perception pour détecter",
-      "inputBox": "Test de Discrétion",
+      "description": "Banked stealth roll",
       "source": "Source d'effets cachés",
       "preloc": {
         "key": "Clé de localisation pour l'étiquette masquée",
@@ -14,10 +12,8 @@
       "iconhint": "Icône par défaut pour l'effet masqué"
     },
     "spot": {
-      "label": "Détection",
       "name": "Détection",
-      "description": "Résultat de la vérification de la perception active",
-      "inputBox": "Test de Perception",
+      "description": "Banked perception roll",
       "source": "Source d'effet ponctuel",
       "preloc": {
         "key": "Clé de localisation pour l'étiquette Spot"
@@ -25,7 +21,7 @@
       "icon": "Icône Détection",
       "iconhint": "Icône par défaut pour l'effet Détection"
     },
-    "activeSpot": "Détection active",
+    "bankPerception": "Bank perception rolls",
     "title": "Furtif",
     "spotHiddenDoors": {
       "name": "Détection automatique de porte cachée",
@@ -38,7 +34,23 @@
       "ignore": "Ignorer les tests de perception"
     },
     "playerHud": {
-      "name": "Autoriser les joueurs à voir (et non à modifier) ​​les valeurs cachées et ponctuelles sur le HUD du jeton"
+      "name": "Players can see banked rolls",
+      "hint": "Players can see banked rolls on the token HUD but can't change them"
+    },
+    "exposure": {
+      "name": "Show light exposure",
+      "hint": "Shows the selected token's light exposure on the Token HUD",
+      "bright": "in Bright light",
+      "dim": "in Dim light",
+      "dark": "in Dark"
+    },
+    "stealthToActor": {
+      "name": "Bank stealth rolls to actor",
+      "hint": "Bank stealth rolls in an actor effect/item rather than the token."
+    },
+    "perceptionToActor": {
+      "name": "Bank perception rolls to actor",
+      "hint": "Bank perception rolls in an actor effect/item rather than the token."
     },
     "source": {
       "hint": "Où trouver l'effet",
@@ -47,13 +59,12 @@
         "beforeLabel": "Impossible de trouver l'effet",
         "afterLabel": "dans CE, en utilisant la valeur par défaut de Stealthy à la place"
       },
-      "cub": {
-        "name": "Combat utility belt",
-        "beforeLabel": "Impossible de trouver l'effet",
-        "afterLabel": "dans CUB, en utilisant la valeur par défaut de Stealthy à la place"
-      },
-      "ae": "Effet Furtif",
-      "min": "Effet Furtif - juste une icône"
+      "ae": "Stealthy (icon and token effect)",
+      "min": "Stealthy (icon only)"
+    },
+    "schema": {
+      "name": "Schema Version",
+      "hint": "Set this to a previous version to force a data migration from the specified version to the current version"
     },
     "logLevel": {
       "name": "Niveau de journalisation",
@@ -76,23 +87,9 @@
         "name": "Fin du tour",
         "hint": "Fin du tour si vous êtes propriétaire du combattant actuel"
       },
-      "tokenLighting": {
-        "name": "Vérifier les conditions d'éclairage des tokens",
-        "hint": "Vérifiez les effets de tokens qui indiquent l'état d'éclairage du token."
-      },
-      "dark": {
-        "label": "Dark",
-        "name": "Dark",
-        "key": "Clé de localisation pour Dark"
-      },
-      "dim": {
-        "label": "Faible",
-        "name": "Faible",
-        "key": "Clé de localisation pour Faible"
-      },
-      "spotPair": {
-        "name": "Enregistrer la perception désavantagée lors du lancer d'un test",
-        "hint": "Analyser les résultats du jet de perception pour avoir à la fois un résultat normal et désavantageux, en lançant un deuxième dé si nécessaire"
+      "perceptionDisadvantage": {
+        "name": "Perception disadvantage in Dim light",
+        "hint": "Use scene lighting to determine if perception disadvantage applies for tokens with stealth. Uses center X,Y of the token, nothing fancy"
       },
       "ignorePassiveFloor": {
         "name": "Ignorer la valeur minimale de perception passive pour les contrôles actifs",
@@ -103,13 +100,21 @@
         "allow": "Alliés avec Vision des ombres sont cachés",
         "inCombat": "Ignore Vision des ombres sauf en combat",
         "ignore": "Ignorer Vision des ombres"
+      },
+      "stealthKey": {
+        "name": "Stealth skill key",
+        "hint": "Must be a key found in actor.system.skills, default is 'ste'. Used to redirect rolls from a custom skill into the stealth channel, all tooltips/etc will continue to use localize from 'stealth'"
+      },
+      "perceptionKey": {
+        "name": "Perception skill key",
+        "hint": "Must be a key found in actor.system.skills, default is 'prc'. See Stealth skill key hint but substitute perception"
       }
     },
     "pf1": {
       "name": "Pathfinder",
       "spotTake10": {
         "name": "Test de perception-10",
-        "hint": "Si aucun effet Détection n'est actif, supposez que le résultat Perception prend -10 pour le test de visibilité."
+        "hint": "If no banked perception roll is available, assume the Perception take-10 result for the visibility test. If disabled, Hidden tokens will not be seen without a banked perception roll."
       }
     },
     "pf2e": {

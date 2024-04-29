@@ -7,41 +7,37 @@ export class Stealthy {
     this.socket = null;
     this.engine.patchFoundry();
     Hooks.once('setup', () => {
-      this.activeSpot = game.settings.get(Stealthy.MODULE_ID, 'activeSpot');
       this.socket = socketlib.registerModule(Stealthy.MODULE_ID);
-      this.socket.register('ToggleActiveSpot', Stealthy.ToggleActiveSpot);
-      this.socket.register('GetActiveSpot', Stealthy.GetActiveSpot);
+      this.socket.register('TogglePerceptionBanking', Stealthy.TogglePerceptionBanking);
+      this.socket.register('GetPerceptionBanking', Stealthy.GetPerceptionBanking);
       this.socket.register('RefreshPerception', Stealthy.RefreshPerception);
     });
   }
 
-  getSpotValue(actor) {
-    const effect = this.engine.findSpotEffect(actor);
-    const { value } = this.engine.getSpotFlagAndValue(actor, effect);
-    return value;
-  }
+  static async TogglePerceptionBanking(toggled) {
+    Stealthy.log(`ToggletPerceptionBanking <= ${toggled}`);
+    stealthy.bankingPerception = toggled;
+    if (toggled || !game.user.isGM)
+      return;
 
-  getHiddenValue(actor) {
-    const effect = this.engine.findHiddenEffect(actor);
-    const { value } = this.engine.getHiddenFlagAndValue(actor, effect);
-    return value;
-  }
-
-  static async ToggleActiveSpot(toggled) {
-    Stealthy.log(`ToggleActiveSpot <= ${toggled}`);
-    stealthy.activeSpot = toggled;
-
-    if (!toggled && game.user.isGM) {
-      const v10 = Math.floor(game.version) < 11;
-      const label = game.i18n.localize(v10 ? 'stealthy.spot.label' : 'stealthy.spot.name');
-      for (let token of canvas.tokens.placeables) {
-        const actor = token.actor;
-        const spot = actor.effects.find(e => (v10 ? e.label : e.name) === label);
-        if (spot) {
-          actor.deleteEmbeddedDocuments('ActiveEffect', [spot.id]);
-        }
+    const v10 = Math.floor(game.version) < 11;
+    const name = game.i18n.localize('stealthy.spot.name');
+    let updates = [];
+    for (let token of canvas.tokens.placeables) {
+      const actor = token.actor;
+      const spot = actor.effects.find((e) => name === (v10 ? e.label : e.name));
+      if (spot) {
+        actor.deleteEmbeddedDocuments('ActiveEffect', [spot.id]);
+      }
+      const tokenDoc = (token instanceof Token) ? token.document : token;
+      if (tokenDoc.flags?.stealthy?.perception) {
+        let update = { _id: token.id, };
+        update['flags.stealthy.-=perception'] = true;
+        updates.push(update);
       }
     }
+    if (updates.length > 0)
+      await canvas.scene.updateEmbeddedDocuments("Token", updates);
   }
 
   static RefreshPerception() {
@@ -49,9 +45,9 @@ export class Stealthy {
     canvas.perception.update({ initializeVision: true }, true);
   }
 
-  static async GetActiveSpot() {
-    Stealthy.log(`GetActiveSpot => ${stealthy.activeSpot}`);
-    return stealthy.activeSpot;
+  static async GetPerceptionBanking() {
+    Stealthy.log(`GetPerceptionBanking => ${stealthy.bankingPerception}`);
+    return stealthy.bankingPerception;
   }
 
   static CONSOLE_COLORS = ['background: #222; color: #80ffff', 'color: #fff'];

@@ -22,11 +22,10 @@ export default class Engine {
 
 
     this.warnedMissingCE = false;
-    this.warnedMissingCUB = false;
     Hooks.once('setup', () => {
-      this.hiddenLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
-      this.spotLabel = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
-      Stealthy.log(`hiddenLabel='${this.hiddenLabel}', spotLabel='${this.spotLabel}'`);
+      this.hiddenName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
+      this.spotName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
+      Stealthy.log(`hiddenName='${this.hiddenName}', spotName='${this.spotName}'`);
       if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
         Doors.initialize();
       }
@@ -65,130 +64,85 @@ export default class Engine {
       if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return false;
     }
 
-    const hiddenEffect = this.findHiddenEffect(tgtToken?.actor);
-    if (!hiddenEffect) return false;
-
-    return !this.canDetectHidden(visionSource, hiddenEffect, tgtToken, detectionMode);
+    return !this.canDetectHidden(visionSource, tgtToken, detectionMode);
   }
 
   findHiddenEffect(actor) {
     const v10 = Math.floor(game.version) < 11;
-    return actor?.effects.find(e => (v10 ? e.label : e.name) === this.hiddenLabel && !e.disabled);
+    return actor?.effects.find((e) => !e.disabled && this.hiddenName === (v10 ? e.label : e.name));
   }
 
   findSpotEffect(actor) {
     const v10 = Math.floor(game.version) < 11;
-    return actor?.effects.find(e => (v10 ? e.label : e.name) === this.spotLabel && !e.disabled);
+    return actor?.effects.find((e) => !e.disabled && this.spotName === (v10 ? e.label : e.name));
   }
 
-  canDetectHidden(visionSource, hiddenEffect, target) {
+  canDetectHidden(visionSource, target, detectionMode) {
     // Implement your system's method for testing spot data vs hidden data
     // This should would in the absence of a spot effect on the viewer, using
     // a passive or default value as necessary
     return true;
   }
 
-  makeHiddenEffectMaker(label) {
+  makeHiddenEffectMaker(name) {
     return (flag, source) => {
-      let hidden;
-      const v10 = Math.floor(game.version) < 11;
-      const hiddenIcon = game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon');
-      if (v10) {
-        hidden = {
-          label,
-          icon: hiddenIcon,
-          changes: [],
-          flags: {
-            convenientDescription: game.i18n.localize("stealthy.hidden.description"),
-            stealthy: flag,
-            core: { statusId: '1' },
-          },
-        };
-      } else {
-        hidden = {
-          name: label,
-          icon: hiddenIcon,
-          changes: [],
-          description: game.i18n.localize("stealthy.hidden.description"),
-          flags: {
-            stealthy: flag,
-          },
-          statuses: ['hidden'],
-        };
-      }
+      let effect = {
+        icon: game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon'),
+        description: game.i18n.localize("stealthy.hidden.description"),
+        flags: {
+          stealthy: flag,
+        },
+        statuses: ['hidden'],
+        changes: [],
+      };
+      effect[(Math.floor(game.version) < 11) ? 'label' : 'name'] = name;
+
       if (source === 'ae') {
         if (typeof ATLUpdate !== 'undefined') {
-          hidden.changes.push({
+          effect.changes.push({
             key: 'ATL.alpha',
             mode: CONST.ACTIVE_EFFECT_MODES.OVERRIDE,
             value: '0.75'
           });
         }
       }
-      return hidden;
+      return effect;
     };
   }
 
-  makeSpotEffectMaker(label) {
+  makeSpotEffectMaker(name) {
     return (flag, source) => {
-      let spot;
-      const v10 = Math.floor(game.version) < 11;
-      const spotIcon = game.settings.get(Stealthy.MODULE_ID, 'spotIcon');
-      if (v10) {
-        spot = {
-          label,
-          icon: spotIcon,
-          flags: {
-            convenientDescription: game.i18n.localize("stealthy.spot.description"),
-            stealthy: flag,
-            core: { statusId: '1' },
-          },
-        };
-      } else {
-        spot = {
-          name: label,
-          icon: spotIcon,
-          description: game.i18n.localize("stealthy.spot.description"),
-          flags: {
-            stealthy: flag,
-          },
-          statuses: ['spot'],
-        };
-      }
-      return spot;
+      let effect = {
+        icon: game.settings.get(Stealthy.MODULE_ID, 'spotIcon'),
+        description: game.i18n.localize("stealthy.spot.description"),
+        flags: {
+          stealthy: flag,
+        },
+        statuses: ['spot'],
+      };
+      effect[(Math.floor(game.version) < 11) ? 'label' : 'name'] = name;
+
+      return effect;
     };
   }
 
-  async updateOrCreateEffect({ label, actor, flag, source, makeEffect }) {
+  async updateOrCreateEffect({ name, actor, flag, source, makeEffect }) {
     const v10 = Math.floor(game.version) < 11;
-    let effect = actor.effects.find(e => (v10 ? e.label : e.name) === label);
+    let effect = actor.effects.find((e) => name === (v10 ? e.label : e.name));
 
     if (!effect) {
       // See if we can source from outside
       if (source === 'ce') {
-        if (game.dfreds?.effectInterface?.findEffectByName(label)) {
-          await game.dfreds.effectInterface.addEffect({ effectName: label, uuid: actor.uuid });
-          effect = actor.effects.find(e => (v10 ? e.label : e.name) === label);
+        if (game.dfreds?.effectInterface?.findEffectByName(name)) {
+          await game.dfreds.effectInterface.addEffect({ effectName: name, uuid: actor.uuid });
+          effect = actor.effects.find((e) => name === (v10 ? e.label : e.name));
         }
         if (!effect && !this.warnedMissingCE) {
           this.warnedMissingCE = true;
           if (game.user.isGM)
             ui.notifications.warn(
-              `${game.i18n.localize('stealthy.source.ce.beforeLabel')} '${label}' ${game.i18n.localize('stealthy.source.ce.afterLabel')}`);
-          console.error(`stealthy | Convenient Effects couldn't find the '${label}' effect so Stealthy will use the default one. Add your customized effect to CE or select a different effect source in Game Settings`);
-        }
-      }
-      else if (source === 'cub') {
-        if (game.cub?.getCondition(label)) {
-          await game.cub.applyCondition(label, actor);
-          effect = actor.effects.find(e => (v10 ? e.label : e.name) === label);
-        }
-        if (!effect && !this.warnedMissingCUB) {
-          this.warnedMissingCUB = true;
-          if (game.user.isGM)
-            ui.notifications.warn(
-              `${game.i18n.localize('stealthy.source.cub.beforeLabel')} '${label}' ${game.i18n.localize('stealthy.source.cub.afterLabel')}`);
-          console.error(`stealthy | Combat Utility Belt couldn't find the '${label}' effect so Stealthy will use the default one. Add your customized effect to CUB or select a different effect source in Game Settings`);
+              `${game.i18n.localize('stealthy.source.ce.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.ce.afterLabel')}`);
+          console.error(`stealthy | Convenient Effects couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CE or select a different effect source in Game Settings`);
         }
       }
 
@@ -208,52 +162,147 @@ export default class Engine {
 
   async updateOrCreateHiddenEffect(actor, flag) {
     await this.updateOrCreateEffect({
-      label: this.hiddenLabel,
+      name: this.hiddenName,
       actor,
       flag,
       source: game.settings.get(Stealthy.MODULE_ID, 'hiddenSource'),
-      makeEffect: this.makeHiddenEffectMaker(this.hiddenLabel)
+      makeEffect: this.makeHiddenEffectMaker(this.hiddenName)
     });
     stealthy.socket.executeForEveryone('RefreshPerception');
   }
 
-  getHiddenFlagAndValue(actor, effect) {
-    // Return the data necessary for storing data about hidden, and the
-    // value that should be shown on the token button input
-    return { flag: { hidden: undefined }, value: undefined };
+  getFlags(effect) {
+    return effect?.flags?.stealthy;
   }
 
-  async setHiddenValue(actor, effect, flag, value) {
-    // If the hidden value was changed, do what you need to store it
-    flag.hidden = value;
-    effect.flags.stealthy = flag;
+  getStealthFlag(token) {
+    let flags = undefined;
+    const actor = token?.actor;
+    const effect = this.findHiddenEffect(actor);
+    if (effect) {
+      flags = this.getFlags(effect);
+    }
+    else {
+      const tokenDoc = token instanceof Token ? token.document : token;
+      flags = tokenDoc.flags?.stealthy;
+      if (!flags || !('stealth' in flags)) return undefined;
+    }
+    const stealth = flags?.stealth ?? flags?.hidden;
+    return { stealth, effect, token };
+  }
+
+  getStealthValue(flag) {
+    return flag?.stealth;
+  }
+
+  async setValueInEffect(flag, skill, value, sourceEffect) {
+    const token = flag.token;
+    let effect = duplicate(sourceEffect);
+    if (!('stealthy' in effect.flags))
+      effect.flags.stealthy = {};
+    effect.flags.stealthy[skill] = value;
+    const actor = token.actor;
     await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
+  }
+
+  async setStealthValue(flag, value) {
+    Stealthy.log('setStealthValue', { flag, value });
+    const token = flag.token;
+    const sourceEffect = flag?.effect;
+
+    // If there is an effect, stuff the flag in it
+    if (sourceEffect) {
+      await this.setValueInEffect(flag, 'stealth', value, sourceEffect);
+    }
+
+    // Otherwise, if we are token based then we need to update the token value
+    else if (!stealthy.stealthToActor) {
+      let update = { _id: token.id, };
+      if (value === undefined) {
+        update['flags.stealthy.-=stealth'] = true;
+      } else {
+        update['flags.stealthy.stealth'] = value;
+      }
+      await canvas.scene.updateEmbeddedDocuments("Token", [update]);
+    }
+
+    // Not sure how we could get here, but don't do anything if we do
+    else
+      return;
+
     stealthy.socket.executeForEveryone('RefreshPerception');
   }
 
   async updateOrCreateSpotEffect(actor, flag) {
     await this.updateOrCreateEffect({
-      label: this.spotLabel,
+      name: this.spotName,
       actor,
       flag,
       source: game.settings.get(Stealthy.MODULE_ID, 'spotSource'),
-      makeEffect: this.makeSpotEffectMaker(this.spotLabel)
+      makeEffect: this.makeSpotEffectMaker(this.spotName)
     });
     canvas.perception.update({ initializeVision: true }, true);
   }
 
-  getSpotFlagAndValue(actor, effect) {
-    // Return the data necessary for storing data about spot, and the
-    // value that should be shown on the token button input
-    return { flag: { spot: undefined }, value: undefined };
+  getPerceptionFlag(token) {
+    let flags = undefined;
+    const actor = token?.actor;
+    const effect = this.findSpotEffect(actor);
+    if (effect) {
+      flags = this.getFlags(effect);
+    }
+    else {
+      const tokenDoc = token instanceof Token ? token.document : token;
+      flags = tokenDoc.flags?.stealthy;
+      if (!flags || !('perception' in flags)) return undefined;
+    }
+    const perception = flags?.perception ?? flags?.spot;
+    return { perception, effect, token };
   }
 
-  async setSpotValue(actor, effect, flag, value) {
-    // If the spot value was changed, do what you need to store it
-    flag.spot = value;
-    effect.flags.stealthy = flag;
-    await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
+  getPerceptionValue(flag) {
+    return flag?.perception;
+  }
+
+  async setPerceptionValue(flag, value) {
+    Stealthy.log('setPerceptionValue', { flag, value });
+
+    const token = flag.token;
+    const sourceEffect = flag?.effect;
+
+    // If there is an effect, stuff the flag in it
+    if (sourceEffect) {
+      await this.setValueInEffect(flag, 'perception', value, sourceEffect);
+    }
+
+    // Otherwise, if we are token based then we need to update the token value
+    else if (!stealthy.perceptionToActor) {
+      let update = { _id: token.id, };
+      if (value === undefined) {
+        update['flags.stealthy.-=perception'] = true;
+      } else {
+        update['flags.stealthy.perception'] = value;
+      }
+      await canvas.scene.updateEmbeddedDocuments("Token", [update]);
+    }
+
+    // Not sure how we could get here, but don't do anything if we do
+    else
+      return;
+
     canvas.perception.update({ initializeVision: true }, true);
+  }
+
+  async putRollOnToken(tokenOrActor, skill, value) {
+    Stealthy.log('putRollOnToken', { tokenOrActor, skill, value });
+    let token = tokenOrActor;
+    if (token instanceof Actor) {
+      token = canvas.tokens.controlled.find((t) => t.actor === tokenOrActor);
+      if (!token) return;
+    }
+    let update = { _id: token.id, };
+    update[`flags.stealthy.${skill}`] = value;
+    await canvas.scene.updateEmbeddedDocuments("Token", [update]);
   }
 
   rollPerception() {
@@ -262,6 +311,50 @@ export default class Engine {
 
   rollStealth() {
     stealthy.socket.executeForEveryone('RefreshPerception');
+  }
+
+  getLightExposure(token) {
+    token = token instanceof Token ? token : token.object;
+
+    const scene = token.scene;
+    let exposure = 'dark';
+    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold) return exposure;
+
+    const center = token.center;
+
+    for (const light of canvas.effects.lightSources) {
+      if (!light.active) continue;
+
+      const bright = light.data.bright;
+      const dim = light.data.dim;
+
+      if (light.object === token) {
+        if (bright) return 'bright';
+        if (dim) exposure = 'dim';
+        continue;
+      }
+
+      if (!light.shape.contains(center.x, center.y)) {
+        continue;
+      }
+
+      if (light.ratio === 1) {
+        return 'bright';
+      }
+
+      if (light.ratio === 0) {
+        exposure = 'dim';
+        continue;
+      }
+
+      const distance = new Ray(light, center).distance;
+      if (distance <= bright) {
+        return 'bright';
+      }
+      exposure = 'dim';
+    }
+
+    return exposure;
   }
 
   canSpotDoor(doorControl, visionSource) {
@@ -280,11 +373,10 @@ export default class Engine {
     if (distance > maxRange) return false;
 
     // Now just compare the perception and the door's stealth
-    const stealth = stealthyFlags.stealth;
-    const token = visionSource.object.document;
-    const actor = token.actor;
-    const { value: perception } = this.getSpotFlagAndValue(actor, this.findSpotEffect(actor));
-    return perception >= stealth;
+    const stealthValue = stealthyFlags.stealth;
+    const perceptionFlag = this.getPerceptionFlag(visionSource.object.document);
+    const perceptionValue = this.getPerceptionValue(perceptionFlag);
+    return perceptionValue >= stealthValue;
   }
 }
 
