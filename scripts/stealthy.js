@@ -8,13 +8,34 @@ export class Stealthy {
     this.engine.patchFoundry();
     Hooks.once('setup', () => {
       this.socket = socketlib.registerModule(Stealthy.MODULE_ID);
-      this.socket.register('TogglePerceptionBanking', Stealthy.TogglePerceptionBanking);
-      this.socket.register('GetPerceptionBanking', Stealthy.GetPerceptionBanking);
-      this.socket.register('RefreshPerception', Stealthy.RefreshPerception);
+      this.socket.register('TogglePerceptionBanking', this.togglePerceptionBanking);
+      this.socket.register('GetPerceptionBanking', this.getPerceptionBanking);
+      this.socket.register('RefreshPerception', this.refreshPerception);
     });
   }
 
-  static async TogglePerceptionBanking(toggled) {
+  getBankedPerception(token) {
+    const flag = this.engine.getPerceptionFlag(token);
+    return this.engine.getPerceptionValue(flag);
+  }
+
+  getBankedStealth(token) {
+    const flag = this.engine.getStealthFlag(token);
+    return this.engine.getStealthValue(flag);
+  }
+
+  async bankPerception(token, value) {
+    if (value?.normal === undefined) {
+      value = { normal: value, disadvantaged: value - 5 };
+    }
+    await this.engine.bankPerception(token, value);
+  }
+
+  async bankStealth(token, value) {
+    await this.engine.bankStealth(token, value);
+  }
+
+  async togglePerceptionBanking(toggled) {
     Stealthy.log(`ToggletPerceptionBanking <= ${toggled}`);
     stealthy.bankingPerception = toggled;
     if (toggled || !game.user.isGM)
@@ -40,13 +61,12 @@ export class Stealthy {
       await canvas.scene.updateEmbeddedDocuments("Token", updates);
   }
 
-  static RefreshPerception() {
+  refreshPerception() {
     Stealthy.log(`RefreshPerception`);
     canvas.perception.update({ initializeVision: true }, true);
   }
 
-  static async GetPerceptionBanking() {
-    Stealthy.log(`GetPerceptionBanking => ${stealthy.bankingPerception}`);
+  async getPerceptionBanking() {
     return stealthy.bankingPerception;
   }
 

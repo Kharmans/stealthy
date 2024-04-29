@@ -64,7 +64,7 @@ Hooks.once('setup', () => {
     scope: 'client',
     config: true,
     type: Boolean,
-    default: true,
+    default: false,
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', {
@@ -206,7 +206,7 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
   const token = tokenHUD.object;
 
   if (game.settings.get(Stealthy.MODULE_ID, 'exposure') && !game.modules.get('tokenlightcondition')?.active) {
-    const exposure = engine.getLightExposure(token) ?? 'dark';
+    const exposure = engine.getLightExposure(token);
     const icon = LIGHT_ICONS[exposure];
     const title = game.i18n.localize(`stealthy.exposure.${exposure}`);
     html.find(".right").append($(`<div class="control-icon" title="${title}">${icon}</div>`));

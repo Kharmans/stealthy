@@ -293,8 +293,8 @@ export default class Engine {
     canvas.perception.update({ initializeVision: true }, true);
   }
 
-  async putRollOnToken(tokenOrActor, skill, value) {
-    Stealthy.log('putRollOnToken', { tokenOrActor, skill, value });
+  async bankRollOnToken(tokenOrActor, skill, value) {
+    Stealthy.log('bankRollOnToken', { tokenOrActor, skill, value });
     let token = tokenOrActor;
     if (token instanceof Actor) {
       token = canvas.tokens.controlled.find((t) => t.actor === tokenOrActor);
@@ -303,6 +303,22 @@ export default class Engine {
     let update = { _id: token.id, };
     update[`flags.stealthy.${skill}`] = value;
     await canvas.scene.updateEmbeddedDocuments("Token", [update]);
+  }
+
+  async bankPerception(token, value) {
+    if (stealthy.perceptionToActor) {
+      await this.updateOrCreateSpotEffect(token.actor, { perception: value });
+    } else {
+      await this.bankRollOnToken(token, 'perception', value);
+    }
+  }
+
+  async setBankedStealth(token, value) {
+    if (stealthy.stealthToActor) {
+      await this.updateOrCreateHiddenEffect(token.actor, { stealth: value });
+    } else {
+      await this.bankRollOnToken(token, 'stealth', value);
+    }
   }
 
   rollPerception() {

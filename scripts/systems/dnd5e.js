@@ -235,7 +235,7 @@ class Engine5e extends Engine {
     if (stealthy.perceptionToActor) {
       await this.updateOrCreateSpotEffect(actor, { perception });
     } else {
-      await this.putRollOnToken(actor, 'perception', perception);
+      await this.bankRollOnToken(actor, 'perception', perception);
     }
 
     super.rollPerception();
@@ -247,7 +247,7 @@ class Engine5e extends Engine {
     if (stealthy.stealthToActor) {
       await this.updateOrCreateHiddenEffect(actor, { stealth: roll.total });
     } else {
-      await this.putRollOnToken(actor, 'stealth', roll.total);
+      await this.bankRollOnToken(actor, 'stealth', roll.total);
     }
 
     super.rollStealth();

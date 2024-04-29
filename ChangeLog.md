@@ -1,3 +1,6 @@
+# v4.0.1
+* Stealthy 4 isn't currently compatible with Perceptive, so I added stealthy.bankPerception and bankStealth to help insulate that module from my internal flag details
+
 # v4.0.0
 * Big code changes, but games should have a seamless upgrade since no data migrations are required.
 * Stealthy now allows the choice of banking stealth and perception rolls to tokens or actors via effects.
