@@ -25,9 +25,6 @@ export class Stealthy {
   }
 
   async bankPerception(token, value) {
-    if (value?.normal === undefined) {
-      value = { normal: value, disadvantaged: value - 5 };
-    }
     await this.engine.bankPerception(token, value);
   }
 

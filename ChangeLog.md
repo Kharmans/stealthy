@@ -1,3 +1,7 @@
+# v4.0.2
+* dnd5e: If using vision-5e, Hearing doesn't get disadvantage against targets hiding in dim light
+* dnd5e: devilsSight gets disadvantage against targets hiding in dim light but not against ones in dark.
+
 # v4.0.1
 * Stealthy 4 isn't currently compatible with Perceptive, so I added stealthy.bankPerception and bankStealth to help insulate that module from my internal flag details
 
@@ -16,7 +20,6 @@
 * Dnd5e: added settings to allow custom skills to substitute for stealth or perception
 
 # v3.18.1
-* FINAL V10-compatible version. Only V11+ in the future.
 * Update pt-BR.json (thanks Kharmans)
 
 # v3.18.0

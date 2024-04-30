@@ -158,7 +158,7 @@ class Engine5e extends Engine {
     }
 
     const stealthValue = this.getStealthValue(stealthFlag);
-    Stealthy.logIfDebug('canDetectHidden', { stealthFlag: stealthFlag, stealth: stealthValue, perceptionFlag: perceptionFlag, perception: perceptionValue });
+    Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${perceptionValue} vs ${stealthValue}`, { stealthFlag, perceptionFlag });
     return perceptionValue > stealthValue;
   }
 
@@ -201,6 +201,17 @@ class Engine5e extends Engine {
     else {
       const pair = { normal: value, disadvantaged: value - 5 };
       await super.setPerceptionValue(flag, pair);
+    }
+  }
+
+  async bankPerception(token, value) {
+    if (value?.normal === undefined) {
+      value = { normal: value, disadvantaged: value - 5 };
+    }
+    if (stealthy.perceptionToActor) {
+      await this.updateOrCreateSpotEffect(token.actor, { perception: value });
+    } else {
+      await this.bankRollOnToken(token, 'perception', value);
     }
   }
 
@@ -269,53 +280,34 @@ class Engine5e extends Engine {
   // check target Token Lighting conditions via effects usage
   // look for effects that indicate Dim or Dark condition on the token
   adjustForLightingConditions(perceptionPair, visionSource, source, tgtToken, detectionMode) {
-    let perception;
+    // Extract the normal perception values from the source
+    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
+    let active = perceptionPair?.normal ?? perceptionPair;
+    let value = active ?? passivePrc;
 
     // What light band are we told we sit in?
     let lightBand = Engine5e.EXPOSURE[this.getLightExposure(tgtToken)];
-
-    // Adjust the light band based on conditions
-    if (detectionMode) {
-      if (detectionMode === 'basicSight') {
-        lightBand = lightBand + 1;
-      }
+    let oldBand = Engine5e.LIGHT_LABELS[lightBand];
+    switch (detectionMode) {
+      case 'basicSight':
+        lightBand += 1;
+        break;
+      case 'devilsSight':
+        if (!lightBand) lightBand = 2;
+        break;
+      case 'hearing':
+        return value;
+      case undefined:
+        if (visionSource.visionMode?.id === 'darkvision') lightBand += 1;
+        break;
     }
-    else {
-      if (visionSource.visionMode?.id === 'darkvision') {
-        lightBand = lightBand + 1;
-      }
-    }
-
-    // Extract the normal perception values from the source
-    let active = perceptionPair?.normal ?? perceptionPair;
-    let value;
-    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
-    if (active !== undefined) {
-      value = active;
-    }
-    else {
-      value = passivePrc;
-    }
+    Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${oldBand}-->${Engine5e.LIGHT_LABELS[lightBand]}`);
 
     // dark = fail, dim = disadvantage, bright = normal
-    if (lightBand <= 0) {
-      perception = -100;
-    }
-    else if (lightBand === 1) {
-      let passiveDisadv = Engine5e.GetPassivePerceptionWithDisadvantage(source);
-      if (active !== undefined) {
-        value = perceptionPair?.disadvantaged ?? value - 5;
-      }
-      else {
-        value = passiveDisadv;
-      }
-      perception = value;
-    }
-    else {
-      perception = value;
-    }
-
-    return perception;
+    if (lightBand <= 0) return -100;
+    if (lightBand !== 1) return value;
+    let passiveDisadv = Engine5e.GetPassivePerceptionWithDisadvantage(source);
+    return (active !== undefined) ? (perceptionPair?.disadvantaged ?? value - 5) : passiveDisadv;
   }
 
 }

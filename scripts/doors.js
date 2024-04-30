@@ -53,28 +53,28 @@ export default class Doors {
       if (v10) {
         const hiddenDoorBlock = `
           <fieldset>
-            <legend>Stealthy</legend>
+            <legend><i class="fa-solid fa-piggy-bank"></i> Stealthy</legend>
             <div class="form-group">
               <label for="stealth">${game.i18n.localize("stealthy.door.stealth")}</label>
-              <input type="number" name="stealth"/ value="${css.object.flags.stealthy?.stealth}">
+              <input type="number" name="stealth" value="${css.object.flags.stealthy?.stealth ?? ''}">
             </div>
             <div class="form-group">
               <label for="maxRange">${game.i18n.localize("stealthy.door.maxRange")}</label>
-              <input type="number" name="maxRange"/ value="${css.object.flags.stealthy?.maxRange}">
+              <input type="number" name="maxRange" value="${css.object.flags.stealthy?.maxRange ?? ''}">
             </div>
           </fieldset>`;
         html.find(".form-group").last().after(hiddenDoorBlock);
       } else {
         html.find(`.door-options`).after(`
           <fieldset>
-            <legend>Stealthy</legend>
+            <legend><i class="fa-solid fa-piggy-bank"></i> Stealthy</legend>
             <div class="form-group">
               <label>${game.i18n.localize("stealthy.door.stealth")}</label>
-              <input type="number" name="stealth"/ value="${css.data.flags?.stealthy?.stealth}">
+              <input type="number" name="stealth" value="${css.data.flags?.stealthy?.stealth ?? ''}">
             </div>
             <div class="form-group">
               <label">${game.i18n.localize("stealthy.door.maxRange")}</label>
-              <input type="number" name="maxRange"/ value="${css.data.flags?.stealthy?.maxRange}">
+              <input type="number" name="maxRange" value="${css.data.flags?.stealthy?.maxRange ?? ''}">
             </div>
           </fieldset>`
         );

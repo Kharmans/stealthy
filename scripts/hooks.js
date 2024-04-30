@@ -219,9 +219,10 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
   if (stealthFlag) {
     let value = engine.getStealthValue(stealthFlag);
     const title = game.i18n.localize("stealthy.hidden.description");
-    const inputBox = $(
-      `<input ${editMode}id="ste_hid_inp_box" title="${title}" type="text" name="hidden_value_inp_box" value="${value}"></input>`
-    );
+    const inputBox = $(`
+      <input ${editMode}id="ste_ste_inp_box" title="${title}" type="text" name="ste_inp_box" value="${value}">
+      </input>
+    `);
     html.find(".right").append(inputBox);
     if (game.user.isGM == true) {
       inputBox.change(async (inputbox) => {
@@ -238,9 +239,10 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
   if (perceptionFlag && !perceptionFlag?.passive) {
     let value = engine.getPerceptionValue(perceptionFlag);
     const title = game.i18n.localize("stealthy.hidden.description");
-    const inputBox = $(
-      `<input ${editMode}id="ste_spt_inp_box" title="${title}" type="text" name="spot_value_inp_box" value="${value}"></input>`
-    );
+    const inputBox = $(`
+      <input ${editMode}id="ste_prc_inp_box" title="${title}" type="text" name="prc_inp_box" value="${value}">
+      </input>
+    `);
     html.find(".left").append(inputBox);
     if (game.user.isGM == true) {
       inputBox.change(async (inputbox) => {
@@ -271,9 +273,18 @@ Hooks.on('getSceneControlButtons', (controls) => {
 });
 
 Hooks.on('renderSettingsConfig', (app, html, data) => {
-  $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.general")).insertBefore($('[name="stealthy.stealthToActor"]').parents('div.form-group:first'));
-  $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.advanced")).insertBefore($('[name="stealthy.hiddenLabel"]').parents('div.form-group:first'));
-  $('<div>').addClass('form-group group-header').html(game.i18n.localize("stealthy.config.debug")).insertBefore($('[name="stealthy.logLevel"]').parents('div.form-group:first'));
+  const sections = [
+    { label: "general", before: "stealthToActor" },
+    { label: "advanced", before: "hiddenLabel" },
+    { label: "debug", before: "logLevel" },
+  ];
+  for (const section of sections) {
+    $('<div>')
+      .addClass('form-group group-header')
+      .html(game.i18n.localize(`stealthy.config.${section.label}`))
+      .insertBefore($(`[name="stealthy.${section.before}"]`)
+        .parents('div.form-group:first'));
+  }
 });
 
 Hooks.once('ready', async () => {
