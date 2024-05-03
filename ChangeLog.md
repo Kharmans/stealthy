@@ -1,3 +1,7 @@
+# v4.0.3
+* Update pt-BR.json (thanks Kharmans)
+* Add minify step to package building
+
 # v4.0.2
 * dnd5e: If using vision-5e, Hearing doesn't get disadvantage against targets hiding in dim light
 * dnd5e: devilsSight gets disadvantage against targets hiding in dim light but not against ones in dark.
