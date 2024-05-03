@@ -201,16 +201,20 @@ const LIGHT_ICONS = {
   dark: '<i class="fa-regular fa-circle"></i>'
 };
 
+function appendExposure(html, engine, token) {
+  const exposure = engine.getLightExposure(token);
+  if (exposure === undefined) return;
+  const icon = LIGHT_ICONS[exposure];
+  const title = game.i18n.localize(`stealthy.exposure.${exposure}`);
+  html.find(".right").append($(`<div class="control-icon" title="${title}">${icon}</div>`));
+}
+
 Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
   const engine = stealthy.engine;
   const token = tokenHUD.object;
 
-  if (game.settings.get(Stealthy.MODULE_ID, 'exposure') && !game.modules.get('tokenlightcondition')?.active) {
-    const exposure = engine.getLightExposure(token);
-    const icon = LIGHT_ICONS[exposure];
-    const title = game.i18n.localize(`stealthy.exposure.${exposure}`);
-    html.find(".right").append($(`<div class="control-icon" title="${title}">${icon}</div>`));
-  }
+  if (game.settings.get(Stealthy.MODULE_ID, 'exposure'))
+    appendExposure(html, engine, token);
 
   if (!(game.user.isGM == true) && !game.settings.get(Stealthy.MODULE_ID, 'playerHud')) return;
   const editMode = game.user.isGM ? '' : 'disabled ';

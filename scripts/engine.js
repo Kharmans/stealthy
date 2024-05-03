@@ -333,9 +333,9 @@ export default class Engine {
     token = token instanceof Token ? token : token.object;
 
     const scene = token.scene;
-    let exposure = 'dark';
-    if (scene !== canvas.scene || !scene.tokenVision || scene.darkness < scene.globalLightThreshold) return exposure;
+    if (scene !== canvas.scene || !scene.tokenVision) return undefined;
 
+    let exposure = 'dark';
     const center = token.center;
 
     for (const light of canvas.effects.lightSources) {
@@ -350,23 +350,16 @@ export default class Engine {
         continue;
       }
 
-      if (!light.shape.contains(center.x, center.y)) {
-        continue;
-      }
+      if (!light.shape.contains(center.x, center.y)) continue;
 
-      if (light.ratio === 1) {
-        return 'bright';
-      }
-
+      if (light.ratio === 1) return 'bright';
       if (light.ratio === 0) {
         exposure = 'dim';
         continue;
       }
 
       const distance = new Ray(light, center).distance;
-      if (distance <= bright) {
-        return 'bright';
-      }
+      if (distance <= bright) return 'bright';
       exposure = 'dim';
     }
 

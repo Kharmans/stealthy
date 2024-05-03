@@ -286,7 +286,8 @@ class Engine5e extends Engine {
     let value = active ?? passivePrc;
 
     // What light band are we told we sit in?
-    let lightBand = Engine5e.EXPOSURE[this.getLightExposure(tgtToken)];
+    const exposure = this.getLightExposure(tgtToken) ?? 2;
+    let lightBand = Engine5e.EXPOSURE[exposure];
     let oldBand = Engine5e.LIGHT_LABELS[lightBand];
     switch (detectionMode) {
       case 'basicSight':
