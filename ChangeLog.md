@@ -1,3 +1,6 @@
+# v4.0.4
+* Fixed misnamed internal function for Perspective.
+
 # v4.0.3
 * Update pt-BR.json (thanks Kharmans)
 * Add minify step to package building

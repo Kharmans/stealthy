@@ -313,7 +313,7 @@ export default class Engine {
     }
   }
 
-  async setBankedStealth(token, value) {
+  async bankStealth(token, value) {
     if (stealthy.stealthToActor) {
       await this.updateOrCreateHiddenEffect(token.actor, { stealth: value });
     } else {
