@@ -40,18 +40,14 @@ export default class Engine {
       Stealthy.MODULE_ID,
       'DetectionMode.prototype._canDetect',
       function (wrapped, visionSource, target) {
-        do {
-          const engine = stealthy.engine;
-          if (target instanceof DoorControl) {
-            if (!engine.canSpotDoor(target, visionSource)) return false;
-            break;
-          }
-          const tgtToken = target?.document;
-          if (tgtToken instanceof TokenDocument) {
-            if (engine.isHidden(visionSource, tgtToken, mode)) return false;
-          }
-        } while (false);
-        return wrapped(visionSource, target);
+        if (!(wrapped(visionSource, target))) return false;
+        const engine = stealthy.engine;
+        if (target instanceof DoorControl)
+          return engine.canSpotDoor(target, visionSource);
+        const tgtToken = target?.document;
+        if (tgtToken instanceof TokenDocument)
+          return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
+        return true;
       },
       libWrapper.MIXED,
       { perf_mode: libWrapper.PERF_FAST }
@@ -59,12 +55,33 @@ export default class Engine {
   }
 
   isHidden(visionSource, tgtToken, detectionMode = undefined) {
+    return false;
+  }
+
+  checkDispositionAndCanDetect(visionSource, tgtToken, detectionMode) {
+    // Early out for buddies
     if (tgtToken?.disposition === visionSource.object.document?.disposition) {
       const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
-      if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return false;
+      if (friendlyStealth === 'ignore' || !game.combat && friendlyStealth === 'inCombat') return true;
     }
 
-    return !this.canDetectHidden(visionSource, tgtToken, detectionMode);
+    // Gotta have a stealth flag or we see you
+    const stealthFlag = this.getStealthFlag(tgtToken);
+    if (!stealthFlag) return true;
+
+    // Otherwise, grab our flags/values and let the system decide
+    const stealthValue = this.getStealthValue(stealthFlag);
+    const perceptionFlag = this.getPerceptionFlag(visionSource.object);
+    const perceptionValue = this.getPerceptionValue(perceptionFlag);
+    return this.canDetect({
+      visionSource,
+      tgtToken,
+      detectionMode,
+      stealthFlag,
+      stealthValue,
+      perceptionFlag,
+      perceptionValue
+    });
   }
 
   findHiddenEffect(actor) {
@@ -77,11 +94,8 @@ export default class Engine {
     return actor?.effects.find((e) => !e.disabled && this.spotName === (v10 ? e.label : e.name));
   }
 
-  canDetectHidden(visionSource, target, detectionMode) {
-    // Implement your system's method for testing spot data vs hidden data
-    // This should would in the absence of a spot effect on the viewer, using
-    // a passive or default value as necessary
-    return true;
+  canDetect({ stealthValue, perceptionValue }) {
+    return perceptionValue > stealthValue;
   }
 
   makeHiddenEffectMaker(name) {

@@ -242,7 +242,7 @@ Hooks.on('renderTokenHUD', (tokenHUD, html, app) => {
   let perceptionFlag = engine.getPerceptionFlag(token);
   if (perceptionFlag && !perceptionFlag?.passive) {
     let value = engine.getPerceptionValue(perceptionFlag);
-    const title = game.i18n.localize("stealthy.hidden.description");
+    const title = game.i18n.localize("stealthy.spot.description");
     const inputBox = $(`
       <input ${editMode}id="ste_prc_inp_box" title="${title}" type="text" name="prc_inp_box" value="${value}">
       </input>

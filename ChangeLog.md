@@ -1,5 +1,9 @@
+# v4.0.5
+* Fix wrong label on banked perception HUD button
+* dnd5e: better darkvision attribute detection
+
 # v4.0.4
-* Fixed misnamed internal function for Perspective.
+* Fixed misnamed internal function for Perspective. This fixes pf1 and dnd4e implementations as well.
 
 # v4.0.3
 * Update pt-BR.json (thanks Kharmans)

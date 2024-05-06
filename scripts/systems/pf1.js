@@ -50,18 +50,14 @@ export class EnginePF1 extends Engine {
         Stealthy.MODULE_ID,
         `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
         function (wrapped, visionSource, target) {
-          do {
-            const engine = stealthy.engine;
-            if (target instanceof DoorControl) {
-              if (!engine.canSpotDoor(target, visionSource)) return false;
-              break;
-            }
-            const tgtToken = target?.document;
-            if (tgtToken instanceof TokenDocument) {
-              if (engine.isHidden(visionSource, tgtToken, mode)) return false;
-            }
-          } while (false);
-          return wrapped(visionSource, target);
+          if (!(wrapped(visionSource, target))) return false;
+          const engine = stealthy.engine;
+          if (target instanceof DoorControl)
+            return engine.canSpotDoor(target, visionSource);
+          const tgtToken = target?.document;
+          if (tgtToken instanceof TokenDocument)
+            return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
+          return true;
         },
         libWrapper.MIXED,
         { perf_mode: libWrapper.PERF_FAST }
@@ -78,17 +74,6 @@ export class EnginePF1 extends Engine {
   findSpotEffect(actor) {
     const v10 = Math.floor(game.version) < 11;
     return actor?.items.find((i) => i.system.active && (v10 ? i.label : i.name) === 'Spot');
-  }
-
-  canDetectHidden(visionSource, tgtToken, detectionMode) {
-    const stealthFlag = this.getStealthFlag(tgtToken);
-    if (!stealthFlag) return true;
-
-    const stealthValue = this.getStealthValue(stealthFlag);
-    const perceptionFlag = this.getPerceptionFlag(visionSource.object);
-    const perceptionValue = this.getPerceptionValue(perceptionFlag);
-
-    return !(perceptionValue === undefined || perceptionValue <= stealthValue);
   }
 
   makeHiddenEffectMaker(name) {
@@ -109,7 +94,7 @@ export class EnginePF1 extends Engine {
   async updateOrCreateHiddenEffect(actor, flag) {
     let hidden = this.findHiddenEffect(actor);
     const v10 = Math.floor(game.version) < 11;
-    if (!hidden) hidden = actor?.items.find((i) => (v10 ? i.label : i.name) === 'Hidden');
+    hidden ??= actor?.items.find((i) => (v10 ? i.label : i.name) === 'Hidden');
     if (!hidden) {
       const effect = {
         "name": "Hidden",
@@ -157,7 +142,7 @@ export class EnginePF1 extends Engine {
 
     // PF1 buffs can be disabled, if so, look for one already on the actor
     const v10 = Math.floor(game.version) < 11;
-    if (!spot) spot = actor?.items.find((i) => (v10 ? i.label : i.name) === 'Spot');
+    spot ??= actor?.items.find((i) => (v10 ? i.label : i.name) === 'Spot');
     if (!spot) {
       const effect = {
         "name": "Spot",

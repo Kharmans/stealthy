@@ -22,17 +22,6 @@ class Engine4e extends Engine {
     });
   }
 
-  canDetectHidden(visionSource, tgtToken, detectionMode) {
-    const stealthFlag = this.getStealthFlag(tgtToken);
-    if (!stealthFlag) return true;
-
-    const stealthValue = this.getStealthValue(stealthFlag);
-    const perceptionFlag = this.getPerceptionFlag(visionSource.object);
-    const perceptionValue = this.getPerceptionValue(perceptionFlag);
-
-    return perceptionValue > stealthValue;
-  }
-
   getStealthFlag(token) {
     let flag = super.getStealthFlag(token);
     if (flag && flag.stealth === undefined)

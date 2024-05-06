@@ -114,18 +114,14 @@ class Engine5e extends Engine {
           Stealthy.MODULE_ID,
           `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
           function (wrapped, visionSource, target) {
-            do {
-              const engine = stealthy.engine;
-              if (target instanceof DoorControl) {
-                if (!engine.canSpotDoor(target, visionSource)) return false;
-                break;
-              }
-              const tgtToken = target?.document;
-              if (tgtToken instanceof TokenDocument) {
-                if (engine.isHidden(visionSource, tgtToken, mode)) return false;
-              }
-            } while (false);
-            return wrapped(visionSource, target);
+            if (!(wrapped(visionSource, target))) return false;
+            const engine = stealthy.engine;
+            if (target instanceof DoorControl)
+              return engine.canSpotDoor(target, visionSource);
+            const tgtToken = target?.document;
+            if (tgtToken instanceof TokenDocument)
+              return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
+            return true;
           },
           libWrapper.MIXED,
           { perf_mode: libWrapper.PERF_FAST }
@@ -137,27 +133,29 @@ class Engine5e extends Engine {
   static LIGHT_LABELS = ['dark', 'dim', 'bright', 'bright'];
   static EXPOSURE = { dark: 0, dim: 1, bright: 2 };
 
-  canDetectHidden(visionSource, tgtToken, detectionMode) {
-    const stealthFlag = this.getStealthFlag(tgtToken);
-    if (!stealthFlag) return true;
-
+  canDetect({
+    visionSource,
+    tgtToken,
+    detectionMode,
+    stealthFlag,
+    stealthValue,
+    perceptionFlag
+  }) {
     const srcToken = visionSource.object.document;
     const source = srcToken?.actor;
-    const perceptionFlag = this.getPerceptionFlag(srcToken);
 
     // active perception loses ties, passive perception wins ties to simulate the
     // idea that active skills need to win outright to change the status quo. Passive
     // perception means that stealth is being the active skill.
-    const valuePair = perceptionFlag?.perception;
+    const perceptionPair = perceptionFlag?.perception;
     let perceptionValue;
     if (game.settings.get(Stealthy.MODULE_ID, 'perceptionDisadvantage')) {
-      perceptionValue = this.adjustForLightingConditions(valuePair, visionSource, source, tgtToken, detectionMode);
+      perceptionValue = this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
     }
     else {
-      perceptionValue = this.adjustForDefaultConditions(valuePair, visionSource, source, tgtToken, detectionMode);
+      perceptionValue = this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
     }
 
-    const stealthValue = this.getStealthValue(stealthFlag);
     Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${perceptionValue} vs ${stealthValue}`, { stealthFlag, perceptionFlag });
     return perceptionValue > stealthValue;
   }
@@ -269,7 +267,7 @@ class Engine5e extends Engine {
     return source.system.skills[game.settings.get(Stealthy.MODULE_ID, 'stealthKey')].passive - 5;
   }
 
-  adjustForDefaultConditions(perceptionPair, visionSource, source, tgtToken, detectionMode) {
+  adjustForDefaultConditions({ perceptionPair, source }) {
     const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
     let perception = perceptionPair?.normal
       ?? perceptionPair
@@ -279,7 +277,7 @@ class Engine5e extends Engine {
 
   // check target Token Lighting conditions via effects usage
   // look for effects that indicate Dim or Dark condition on the token
-  adjustForLightingConditions(perceptionPair, visionSource, source, tgtToken, detectionMode) {
+  adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode }) {
     // Extract the normal perception values from the source
     const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
     let active = perceptionPair?.normal ?? perceptionPair;
@@ -291,7 +289,8 @@ class Engine5e extends Engine {
     let oldBand = Engine5e.LIGHT_LABELS[lightBand];
     switch (detectionMode) {
       case 'basicSight':
-        lightBand += 1;
+        if (source.system.attributes.senses.darkvision)
+          lightBand += 1;
         break;
       case 'devilsSight':
         if (!lightBand) lightBand = 2;
