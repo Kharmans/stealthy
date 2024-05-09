@@ -148,37 +148,77 @@ class Engine5e extends Engine {
     // idea that active skills need to win outright to change the status quo. Passive
     // perception means that stealth is being the active skill.
     const perceptionPair = perceptionFlag?.perception;
-    let perceptionValue;
-    if (game.settings.get(Stealthy.MODULE_ID, 'perceptionDisadvantage')) {
-      perceptionValue = this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
-    }
-    else {
-      perceptionValue = this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
-    }
+    const perceptionValue = (game.settings.get(Stealthy.MODULE_ID, 'perceptionDisadvantage'))
+      ? this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode })
+      : this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode })
 
     Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${perceptionValue} vs ${stealthValue}`, { stealthFlag, perceptionFlag });
     return perceptionValue > stealthValue;
   }
 
-  makeSpotEffectMaker(name) {
-    return (flag, source) => {
-      let effect = super.makeSpotEffectMaker(name)(flag, source);
-      if (game.combat) effect.duration = { turns: 1, seconds: 6 };
-      return effect;
-    };
+  getPassivePerceptionWithDisadvantage(source) {
+    // todo: don't apply -5 if already disadvantaged
+    return (source.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'stealthKey')]?.passive ?? -95) - 5;
+  }
+
+  adjustForDefaultConditions({ perceptionPair, source }) {
+    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
+    let perception = perceptionPair?.normal
+      ?? perceptionPair
+      ?? (passivePrc + 1);
+    return perception;
+  }
+
+  // check target Token Lighting conditions via effects usage
+  // look for effects that indicate Dim or Dark condition on the token
+  adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode }) {
+    // Extract the normal perception values from the source
+    const active = perceptionPair?.normal ?? perceptionPair;
+    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
+    const value = active ?? passivePrc;
+
+    // What light band are we told we sit in?
+    const exposure = this.getLightExposure(tgtToken) ?? 2;
+    let lightBand = Engine5e.EXPOSURE[exposure];
+    const oldBand = lightBand;
+    switch (detectionMode) {
+      case 'basicSight':
+        // For vision-5e, the only way to tell darkvision from normal vision is looking at the darkvision radius.
+        // zero means normal vision
+        if (visionSource.radius > 0)
+          lightBand += 1;
+        break;
+      case 'devilsSight':
+        if (!lightBand) lightBand = 2;
+        break;
+      case 'hearing':
+        return value;
+      case undefined:
+        if (visionSource.visionMode?.id === 'darkvision') lightBand += 1;
+        break;
+    }
+    if (oldBand != lightBand)
+      Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${Engine5e.LIGHT_LABELS[oldBand]}-->${Engine5e.LIGHT_LABELS[lightBand]}`);
+
+    // dark = fail, dim = disadvantage, bright = normal
+    if (lightBand <= 0) return -100;
+    if (lightBand !== 1) return value;
+    return (active === undefined)
+      ? this.getPassivePerceptionWithDisadvantage(source)
+      : perceptionPair?.disadvantaged ?? value - 5;
   }
 
   getStealthFlag(token) {
     let flag = super.getStealthFlag(token);
     if (flag && flag.stealth === undefined)
-      flag.stealth = flag.token.actor.system.skills[game.settings.get(Stealthy.MODULE_ID, 'stealthKey')].passive;
+      flag.stealth = flag.token.actor.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'stealthKey')]?.passive ?? -100;
     return flag;
   }
 
   getPerceptionFlag(token) {
     const flag = super.getPerceptionFlag(token);
     if (flag) return flag;
-    const passive = token.actor.system.skills[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')].passive;
+    const passive = token.actor.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
     return {
       token,
       passive: true,
@@ -213,6 +253,18 @@ class Engine5e extends Engine {
     }
   }
 
+  async rollStealth(actor, roll) {
+    Stealthy.log('Stealthy5e.rollStealth', { actor, roll });
+
+    if (stealthy.stealthToActor) {
+      await this.updateOrCreateHiddenEffect(actor, { stealth: roll.total });
+    } else {
+      await this.bankRollOnToken(actor, 'stealth', roll.total);
+    }
+
+    super.rollStealth();
+  }
+
   async rollPerception(actor, roll) {
     Stealthy.log('Stealthy5e.rollPerception', { actor, roll });
     if (!stealthy.bankingPerception) return;
@@ -236,7 +288,7 @@ class Engine5e extends Engine {
     }
 
     if (!game.settings.get(Stealthy.MODULE_ID, 'ignorePassiveFloor')) {
-      const passivePrc = actor.system.skills[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')].passive;
+      const passivePrc = actor.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
       perception.normal = Math.max(perception.normal, passivePrc);
       perception.disadvantaged = Math.max(perception.disadvantaged, passivePrc - 5);
     }
@@ -250,64 +302,12 @@ class Engine5e extends Engine {
     super.rollPerception();
   }
 
-  async rollStealth(actor, roll) {
-    Stealthy.log('Stealthy5e.rollStealth', { actor, roll });
-
-    if (stealthy.stealthToActor) {
-      await this.updateOrCreateHiddenEffect(actor, { stealth: roll.total });
-    } else {
-      await this.bankRollOnToken(actor, 'stealth', roll.total);
-    }
-
-    super.rollStealth();
-  }
-
-  static GetPassivePerceptionWithDisadvantage(source) {
-    // todo: don't apply -5 if already disadvantaged
-    return source.system.skills[game.settings.get(Stealthy.MODULE_ID, 'stealthKey')].passive - 5;
-  }
-
-  adjustForDefaultConditions({ perceptionPair, source }) {
-    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
-    let perception = perceptionPair?.normal
-      ?? perceptionPair
-      ?? (passivePrc + 1);
-    return perception;
-  }
-
-  // check target Token Lighting conditions via effects usage
-  // look for effects that indicate Dim or Dark condition on the token
-  adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode }) {
-    // Extract the normal perception values from the source
-    const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
-    let active = perceptionPair?.normal ?? perceptionPair;
-    let value = active ?? passivePrc;
-
-    // What light band are we told we sit in?
-    const exposure = this.getLightExposure(tgtToken) ?? 2;
-    let lightBand = Engine5e.EXPOSURE[exposure];
-    let oldBand = Engine5e.LIGHT_LABELS[lightBand];
-    switch (detectionMode) {
-      case 'basicSight':
-        if (source.system.attributes.senses.darkvision)
-          lightBand += 1;
-        break;
-      case 'devilsSight':
-        if (!lightBand) lightBand = 2;
-        break;
-      case 'hearing':
-        return value;
-      case undefined:
-        if (visionSource.visionMode?.id === 'darkvision') lightBand += 1;
-        break;
-    }
-    Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${oldBand}-->${Engine5e.LIGHT_LABELS[lightBand]}`);
-
-    // dark = fail, dim = disadvantage, bright = normal
-    if (lightBand <= 0) return -100;
-    if (lightBand !== 1) return value;
-    let passiveDisadv = Engine5e.GetPassivePerceptionWithDisadvantage(source);
-    return (active !== undefined) ? (perceptionPair?.disadvantaged ?? value - 5) : passiveDisadv;
+  makeSpotEffectMaker(name) {
+    return (flag, source) => {
+      let effect = super.makeSpotEffectMaker(name)(flag, source);
+      if (game.combat) effect.duration = { turns: 1, seconds: 6 };
+      return effect;
+    };
   }
 
 }
