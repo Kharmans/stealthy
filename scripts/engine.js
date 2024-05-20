@@ -22,6 +22,14 @@ export default class Engine {
 
 
     this.warnedMissingCE = false;
+
+    this.defaultDetectionModes = [
+      'basicSight',
+      'lightPerception',
+      'seeAll',
+      'seeInvisibility',
+    ];
+
     Hooks.once('setup', () => {
       this.hiddenName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
       this.spotName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
@@ -33,25 +41,29 @@ export default class Engine {
   }
 
   patchFoundry() {
-    // Generic Detection mode patching
-    const mode = 'detectionMode';
-    console.log(...Stealthy.colorizeOutput(`patching ${mode}`));
-    libWrapper.register(
-      Stealthy.MODULE_ID,
-      'DetectionMode.prototype._canDetect',
-      function (wrapped, visionSource, target) {
-        if (!(wrapped(visionSource, target))) return false;
-        const engine = stealthy.engine;
-        if (target instanceof DoorControl)
-          return engine.canSpotDoor(target, visionSource);
-        const tgtToken = target?.document;
-        if (tgtToken instanceof TokenDocument)
-          return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
-        return true;
-      },
-      libWrapper.MIXED,
-      { perf_mode: libWrapper.PERF_FAST }
-    );
+    // Defaults are the allowed for the time being
+    const allowedModes = this.defaultDetectionModes;
+
+    const sightModes = allowedModes.filter((m) => m in CONFIG.Canvas.detectionModes);
+    for (const mode of sightModes) {
+      Stealthy.log(`patching ${mode}`);
+      libWrapper.register(
+        Stealthy.MODULE_ID,
+        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+        function (wrapped, visionSource, target) {
+          if (!(wrapped(visionSource, target))) return false;
+          const engine = stealthy.engine;
+          if (target instanceof DoorControl)
+            return engine.canSpotDoor(target, visionSource);
+          const tgtToken = target?.document;
+          if (tgtToken instanceof TokenDocument)
+            return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
+          return true;
+        },
+        libWrapper.MIXED,
+        { perf_mode: libWrapper.PERF_FAST }
+      );
+    }
   }
 
   // deprecated

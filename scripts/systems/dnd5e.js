@@ -7,6 +7,15 @@ class Engine5e extends Engine {
   constructor() {
     super();
 
+    if (game.modules.get("vision-5e")?.active) {
+      this.defaultDetectionModes.push(
+        'devilsSight',
+        'etherealSight',
+        'hearing',
+        'witchSight'
+      );
+    }
+
     game.keybindings.register(Stealthy.MODULE_ID, "endTurn", {
       name: game.i18n.localize("stealthy.dnd5e.endTurn.name"),
       hint: game.i18n.localize("stealthy.dnd5e.endTurn.hint"),
@@ -90,46 +99,6 @@ class Engine5e extends Engine {
     });
   }
 
-  patchFoundry() {
-    super.patchFoundry();
-
-    // If vision-5e isn't active, just keep the default behavior
-    if (!game.modules.get("vision-5e")?.active) return;
-
-    // Pick the sight modes in vision-5e that we want Stealthy to affect
-    Hooks.once('setup', () => {
-      const sightModes = [
-        'basicSight',
-        'devilsSight',
-        'etherealSight',
-        'hearing',
-        'lightPerception',
-        'seeAll',
-        'seeInvisibility',
-        'witchSight',
-      ];
-      for (const mode of sightModes) {
-        Stealthy.log(`patching ${mode}`);
-        libWrapper.register(
-          Stealthy.MODULE_ID,
-          `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
-          function (wrapped, visionSource, target) {
-            if (!(wrapped(visionSource, target))) return false;
-            const engine = stealthy.engine;
-            if (target instanceof DoorControl)
-              return engine.canSpotDoor(target, visionSource);
-            const tgtToken = target?.document;
-            if (tgtToken instanceof TokenDocument)
-              return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
-            return true;
-          },
-          libWrapper.MIXED,
-          { perf_mode: libWrapper.PERF_FAST }
-        );
-      }
-    });
-  }
-
   static LIGHT_LABELS = ['dark', 'dim', 'bright', 'bright'];
   static EXPOSURE = { dark: 0, dim: 1, bright: 2 };
 
@@ -150,7 +119,7 @@ class Engine5e extends Engine {
     const perceptionPair = perceptionFlag?.perception;
     const perceptionValue = (game.settings.get(Stealthy.MODULE_ID, 'perceptionDisadvantage'))
       ? this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode })
-      : this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode })
+      : this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
 
     Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${perceptionValue} vs ${stealthValue}`, { stealthFlag, perceptionFlag });
     return perceptionValue > stealthValue;
