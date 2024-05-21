@@ -44,7 +44,7 @@ export class EnginePF1 extends Engine {
     Hooks.on('renderSettingsConfig', (app, html, data) => {
       $('<div>').addClass('form-group group-header')
         .html(game.i18n.localize("stealthy.pf1.name"))
-        .insertBefore($('[name="stealthy.spotTake10"]')
+        .insertBefore($('[name="stealthy.passiveSpotOffset"]')
           .parents('div.form-group:first'));
     });
   }
