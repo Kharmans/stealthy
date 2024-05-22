@@ -13,8 +13,8 @@ export class EnginePF1 extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'passiveSpotOffset', {
-      name: game.i18n.localize("stealthy.pf1.passiveSpotOffset.name"),
-      hint: game.i18n.localize("stealthy.pf1.passiveSpotOffset.hint"),
+      name: "stealthy.pf1.passiveSpotOffset.name",
+      hint: "stealthy.pf1.passiveSpotOffset.hint",
       scope: 'world',
       config: true,
       type: Number,

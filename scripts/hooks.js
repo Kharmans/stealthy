@@ -11,8 +11,8 @@ Hooks.once('init', () => {
   const moduleVersion = module.version;
 
   game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', {
-    name: game.i18n.localize("stealthy.stealthToActor.name"),
-    hint: game.i18n.localize("stealthy.stealthToActor.hint"),
+    name: "stealthy.stealthToActor.name",
+    hint: "stealthy.stealthToActor.hint",
     scope: 'world',
     config: true,
     type: Boolean,
@@ -23,8 +23,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'perceptionToActor', {
-    name: game.i18n.localize("stealthy.perceptionToActor.name"),
-    hint: game.i18n.localize("stealthy.perceptionToActor.hint"),
+    name: "stealthy.perceptionToActor.name",
+    hint: "stealthy.perceptionToActor.hint",
     scope: 'world',
     config: true,
     type: Boolean,
@@ -35,7 +35,7 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', {
-    name: game.i18n.localize("stealthy.friendlyStealth.name"),
+    name: "stealthy.friendlyStealth.name",
     scope: 'world',
     config: true,
     type: String,
@@ -48,8 +48,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'playerHud', {
-    name: game.i18n.localize("stealthy.playerHud.name"),
-    name: game.i18n.localize("stealthy.playerHud.hint"),
+    name: "stealthy.playerHud.name",
+    hint: "stealthy.playerHud.hint",
     scope: 'world',
     config: true,
     type: Boolean,
@@ -57,8 +57,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'exposure', {
-    name: game.i18n.localize("stealthy.exposure.name"),
-    name: game.i18n.localize("stealthy.exposure.hint"),
+    name: "stealthy.exposure.name",
+    hint: "stealthy.exposure.hint",
     scope: 'client',
     config: true,
     type: Boolean,
@@ -66,8 +66,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', {
-    name: game.i18n.localize("stealthy.spotHiddenDoors.name"),
-    hint: game.i18n.localize("stealthy.spotHiddenDoors.hint"),
+    name: "stealthy.spotHiddenDoors.name",
+    hint: "stealthy.spotHiddenDoors.hint",
     scope: 'world',
     requiresReload: true,
     config: true,
@@ -76,16 +76,16 @@ Hooks.once('init', () => {
   });
 
   let sources = {
-    'none': game.i18n.localize("stealthy.source.min"),
-    'ae': game.i18n.localize("stealthy.source.ae"),
+    'none': "stealthy.source.min",
+    'ae': "stealthy.source.ae",
   };
   if (game.dfreds?.effectInterface) {
-    sources['ce'] = game.i18n.localize("stealthy.source.ce.name");
+    sources['ce'] = "stealthy.source.ce.name";
   }
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenSource', {
-    name: game.i18n.localize("stealthy.hidden.source"),
-    hint: game.i18n.localize("stealthy.source.hint"),
+    name: "stealthy.hidden.source",
+    hint: "stealthy.source.hint",
     scope: 'world',
     config: true,
     type: String,
@@ -94,8 +94,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenIcon', {
-    name: game.i18n.localize("stealthy.hidden.icon"),
-    hint: game.i18n.localize("stealthy.hidden.iconhint"),
+    name: "stealthy.hidden.icon",
+    hint: "stealthy.hidden.iconhint",
     scope: 'world',
     requiresReload: true,
     config: true,
@@ -105,8 +105,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotSource', {
-    name: game.i18n.localize("stealthy.spot.source"),
-    hint: game.i18n.localize("stealthy.source.hint"),
+    name: "stealthy.spot.source",
+    hint: "stealthy.source.hint",
     scope: 'world',
     config: true,
     type: String,
@@ -115,8 +115,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotIcon', {
-    name: game.i18n.localize("stealthy.spot.icon"),
-    hint: game.i18n.localize("stealthy.spot.iconhint"),
+    name: "stealthy.spot.icon",
+    hint: "stealthy.spot.iconhint",
     scope: 'world',
     requiresReload: true,
     config: true,
@@ -126,8 +126,8 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenLabel', {
-    name: game.i18n.localize("stealthy.hidden.preloc.key"),
-    hint: game.i18n.localize("stealthy.hidden.preloc.hint"),
+    name: "stealthy.hidden.preloc.key",
+    hint: "stealthy.hidden.preloc.hint",
     scope: 'world',
     config: true,
     type: String,
@@ -138,7 +138,7 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'spotLabel', {
-    name: game.i18n.localize("stealthy.spot.preloc.key"),
+    name: "stealthy.spot.preloc.key",
     scope: 'world',
     config: true,
     type: String,
@@ -149,21 +149,21 @@ Hooks.once('init', () => {
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'logLevel', {
-    name: game.i18n.localize("stealthy.logLevel.name"),
+    name: "stealthy.logLevel.name",
     scope: 'client',
     config: true,
     type: String,
     choices: {
-      'none': game.i18n.localize("stealthy.logLevel.none"),
-      'debug': game.i18n.localize("stealthy.logLevel.debug"),
-      'log': game.i18n.localize("stealthy.logLevel.log")
+      'none': "stealthy.logLevel.none",
+      'debug': "stealthy.logLevel.debug",
+      'log': "stealthy.logLevel.log"
     },
     default: 'none'
   });
 
   game.settings.register(Stealthy.MODULE_ID, 'schema', {
-    name: game.i18n.localize(`${Stealthy.MODULE_ID}.schema.name`),
-    hint: game.i18n.localize(`${Stealthy.MODULE_ID}.schema.hint`),
+    name: `${Stealthy.MODULE_ID}.schema.name`,
+    hint: `${Stealthy.MODULE_ID}.schema.hint`,
     scope: 'world',
     config: true,
     type: String,

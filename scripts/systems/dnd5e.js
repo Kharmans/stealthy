@@ -17,8 +17,8 @@ class Engine5e extends Engine {
     }
 
     game.keybindings.register(Stealthy.MODULE_ID, "endTurn", {
-      name: game.i18n.localize("stealthy.dnd5e.endTurn.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.endTurn.hint"),
+      name: "stealthy.dnd5e.endTurn.name",
+      hint: "stealthy.dnd5e.endTurn.hint",
       editable: [
         { key: "End" }
       ],
@@ -32,8 +32,8 @@ class Engine5e extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'perceptionDisadvantage', {
-      name: game.i18n.localize("stealthy.dnd5e.perceptionDisadvantage.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.perceptionDisadvantage.hint"),
+      name: "stealthy.dnd5e.perceptionDisadvantage.name",
+      hint: "stealthy.dnd5e.perceptionDisadvantage.hint",
       scope: 'world',
       config: true,
       type: Boolean,
@@ -41,8 +41,8 @@ class Engine5e extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'stealthKey', {
-      name: game.i18n.localize("stealthy.dnd5e.stealthKey.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.stealthKey.hint"),
+      name: "stealthy.dnd5e.stealthKey.name",
+      hint: "stealthy.dnd5e.stealthKey.hint",
       scope: 'world',
       config: true,
       type: String,
@@ -50,8 +50,8 @@ class Engine5e extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'perceptionKey', {
-      name: game.i18n.localize("stealthy.dnd5e.perceptionKey.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.perceptionKey.hint"),
+      name: "stealthy.dnd5e.perceptionKey.name",
+      hint: "stealthy.dnd5e.perceptionKey.hint",
       scope: 'world',
       config: true,
       type: String,
@@ -59,8 +59,8 @@ class Engine5e extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'ignorePassiveFloor', {
-      name: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.name"),
-      hint: game.i18n.localize("stealthy.dnd5e.ignorePassiveFloor.hint"),
+      name: "stealthy.dnd5e.ignorePassiveFloor.name",
+      hint: "stealthy.dnd5e.ignorePassiveFloor.hint",
       scope: 'world',
       config: true,
       type: Boolean,
@@ -68,14 +68,14 @@ class Engine5e extends Engine {
     });
 
     game.settings.register(Stealthy.MODULE_ID, 'friendlyUmbralSight', {
-      name: game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.name"),
+      name: "stealthy.dnd5e.friendlyUmbralSight.name",
       scope: 'world',
       config: false,
       type: String,
       choices: {
-        'allow': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.allow"),
-        'inCombat': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.inCombat"),
-        'ignore': game.i18n.localize("stealthy.dnd5e.friendlyUmbralSight.ignore")
+        'allow': "stealthy.dnd5e.friendlyUmbralSight.allow",
+        'inCombat': "stealthy.dnd5e.friendlyUmbralSight.inCombat",
+        'ignore': "stealthy.dnd5e.friendlyUmbralSight.ignore"
       },
       default: 'inCombat'
     });
