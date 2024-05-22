@@ -1,4 +1,5 @@
 # v4.1.1
+* dnd5e: 3.2 compatible
 * Update pt-BR.json (Thanks Kharmans)
 
 # v4.1.0
