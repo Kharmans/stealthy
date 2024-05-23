@@ -40,10 +40,10 @@ A game setting individually controls whether stealth or perception roll results 
 ![stealth-roll](https://user-images.githubusercontent.com/16523503/209989026-e0d2dad2-8dc1-459c-8824-a2332ce8a9cd.gif)
 ![perception](https://user-images.githubusercontent.com/16523503/213257350-e382f584-1c5c-41a8-bf00-60705ec89bd0.gif)
 
-## Invisible characters can hide from *See Invisibility*
-An invisible token with a banked stealth roll will check vs perception before showing up in the *See Invisibility* vision mode.
+## GM Configures which detection modes can be countered by stealth
+A GM can select which detection modes should be able to be affected by stealth checks. If the *Vision5e* module is active, the configuration table will include all of the additional detection modes that *Vision5e* provides.
 
-![invisible](https://user-images.githubusercontent.com/16523503/210176827-03fda57a-6d09-4144-8253-b8b7cd9155ac.gif)
+![menu-image](https://github.com/Eligarf/stealthy/assets/16523503/01030283-781c-4cbf-8eaf-07f306a10c2e)
 
 ## Friendly tokens can still be viewed
 The GM has options for allowing stealthy tokens to be seen by other tokens of the same disposition.

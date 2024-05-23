@@ -25,10 +25,12 @@ export class DetectionModesApplicationClass extends FormApplication {
 
   getData() {
     const context = super.getData();
-    const entries = Object.entries(this.#detectionModes).map(([k, v]) => [k, {
-      label: CONFIG.Canvas.detectionModes[k].label,
-      enabled: v
-    }]);
+    const entries = Object.entries(this.#detectionModes)
+      .filter(([k,v]) => k in CONFIG.Canvas.detectionModes)
+      .map(([k, v]) => [k, {
+        label: CONFIG.Canvas.detectionModes[k].label,
+        enabled: v
+      }]);
     context.detectionModes = Object.fromEntries(entries);
     return context;
   }
@@ -36,7 +38,7 @@ export class DetectionModesApplicationClass extends FormApplication {
   _updateObject(event, formData) {
     Stealthy.log('_updateObject', { event, formData });
     const original = game.settings.get(Stealthy.MODULE_ID, "allowedDetectionModes");
-    const different = (JSON.stringify(formData) !== JSON.stringify(original) );
+    const different = (JSON.stringify(formData) !== JSON.stringify(original));
     if (different) {
       ui.notifications.warn(game.i18n.localize("stealthy.detectionModesMenu.warning"));
       game.settings.set(Stealthy.MODULE_ID, 'allowedDetectionModes', formData);

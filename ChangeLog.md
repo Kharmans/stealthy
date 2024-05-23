@@ -1,3 +1,6 @@
+# v4.2.1
+* Fix a bug in the detection modes menu if vision-5e is disabled
+
 # v4.2
 * Added a configuration menu allowing GMs to decide which detection modes can be countered with Stealth.
 
