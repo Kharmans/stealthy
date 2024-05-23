@@ -1,3 +1,6 @@
+# v4.2
+* Added a configuration menu allowing GMs to decide which detection modes can be countered with Stealth.
+
 # v4.1.1
 * dnd5e: 3.2 compatible
 * Update pt-BR.json (Thanks Kharmans)

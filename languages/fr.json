@@ -52,6 +52,13 @@
       "name": "Bank perception rolls to actor",
       "hint": "Bank perception rolls in an actor effect/item rather than the token."
     },
+    "detectionModesMenu": {
+      "name": "Detection Modes",
+      "label": "Configure Detection Modes",
+      "hint": "Enable which detection modes stealth will apply to",
+      "title": "Setting Stealthable Detection Modes",
+      "warning": "Reload is required to apply changes to selected detection modes"
+    },
     "source": {
       "hint": "Où trouver l'effet",
       "ce": {

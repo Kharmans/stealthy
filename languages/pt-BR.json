@@ -52,6 +52,13 @@
       "name": "Acumular Percepção no Ator",
       "hint": "Acumula as rolagens de Furtividade no efeito/item de um ator, ao invés do próprio ator."
     },
+    "detectionModesMenu": {
+      "name": "Detection Modes",
+      "label": "Configure Detection Modes",
+      "hint": "Enable which detection modes stealth will apply to",
+      "title": "Setting Stealthable Detection Modes",
+      "warning": "Reload is required to apply changes to selected detection modes"
+    },
     "source": {
       "hint": "Onde encontrar o efeito",
       "ce": {

@@ -1,0 +1,19 @@
+<form action="#">
+  <div class="allowed-detection-modes">
+    <table>
+      {{#each detectionModes}}
+      <tr>
+        <td>
+          <input type="checkbox" name="{{@key}}" id="stealthy-{{@key}}" {{checked enabled}}>
+          <label for="{{@key}}">{{localize label}}</label>
+        </td>
+      </tr>
+      {{/each}}
+    </table>
+  </div>
+
+  <footer class="sheet-footer flexrow">
+    <button type="submit" name="submit"><i class="fas fa-save"></i> {{localize 'SETTINGS.Save'}}</button>
+    {{!-- <button type="button" name="reset"><i class="fas fa-undo"></i> {{localize 'SETTINGS.Reset'}}</button> --}}
+  </footer>
+</form>

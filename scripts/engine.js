@@ -40,12 +40,31 @@ export default class Engine {
     });
   }
 
-  patchFoundry() {
-    // Defaults are the allowed for the time being
-    const allowedModes = this.defaultDetectionModes;
+  mixInDefaults(settings) {
+    let changed = false;
+    for (const mode in CONFIG.Canvas.detectionModes) {
+      if (!(mode in settings)) {
+        settings[mode] = this.defaultDetectionModes.includes(mode);
+        changed = true;
+      }
+    }
+    return changed;
+  }
 
-    const sightModes = allowedModes.filter((m) => m in CONFIG.Canvas.detectionModes);
-    for (const mode of sightModes) {
+  patchFoundry() {
+    let allowedModes = game.settings.get(Stealthy.MODULE_ID, 'allowedDetectionModes');
+    const changed = this.mixInDefaults(allowedModes);
+    if (changed) {
+      Hooks.once('ready', () => {
+        Stealthy.log('Allowed modes settings update', allowedModes);
+        game.settings.set(Stealthy.MODULE_ID, 'allowedDetectionModes', allowedModes);
+      });
+    }
+
+    for (const mode in allowedModes) {
+      if (!allowedModes[mode]) continue;
+      if (!(mode in CONFIG.Canvas.detectionModes)) continue;
+
       Stealthy.log(`patching ${mode}`);
       libWrapper.register(
         Stealthy.MODULE_ID,

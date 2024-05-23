@@ -1,4 +1,5 @@
 import { Stealthy } from "./stealthy.js";
+import { DetectionModesApplicationClass } from "./detectionModesMenu.js";
 
 function migrate(moduleVersion, oldVersion) {
 
@@ -34,15 +35,32 @@ Hooks.once('init', () => {
     }
   });
 
+  game.settings.registerMenu(Stealthy.MODULE_ID, "detectionModesMenu", {
+    name: "stealthy.detectionModesMenu.name",
+    label: "stealthy.detectionModesMenu.label",
+    hint: "stealthy.detectionModesMenu.hint",
+    icon: "fas fa-wrench",
+    type: DetectionModesApplicationClass,
+    restricted: true,
+  });
+
+
+  game.settings.register(Stealthy.MODULE_ID, 'allowedDetectionModes', {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: {},
+  });
+
   game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', {
     name: "stealthy.friendlyStealth.name",
     scope: 'world',
     config: true,
     type: String,
     choices: {
-      'allow': game.i18n.localize("stealthy.friendlyStealth.allow"),
-      'inCombat': game.i18n.localize("stealthy.friendlyStealth.inCombat"),
-      'ignore': game.i18n.localize("stealthy.friendlyStealth.ignore")
+      'allow': "stealthy.friendlyStealth.allow",
+      'inCombat': "stealthy.friendlyStealth.inCombat",
+      'ignore': "stealthy.friendlyStealth.ignore"
     },
     default: 'inCombat'
   });

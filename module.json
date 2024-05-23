@@ -11,7 +11,7 @@
   "version": "4.1",
   "compatibility": {
     "minimum": "10.291",
-    "verified": "12.323"
+    "verified": "12"
   },
   "relationships": {
     "systems": [
