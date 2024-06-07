@@ -4,8 +4,10 @@
   "description": "Adds perception vs stealth checks to vision tests for tokens with the Hidden condition",
   "authors": [
     {
-      "name": "Eligarf",
-      "flags": {}
+      "name": "Rule",
+      "url": "https://github.com/Eligarf",
+      "discord": "rule6296",
+      "ko-fi": "rule671908"
     }
   ],
   "version": "4.1",
