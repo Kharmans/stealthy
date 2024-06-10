@@ -1,3 +1,6 @@
+# v4.2.2
+* Fix a v12 deprecation warning when testing distance to hidden doors
+
 # v4.2.1
 * Update pt-BR.json (Thanks Kharmans)
 * Fix a bug in the detection modes menu if a detection mode is no longer available due to module disabling/etc
