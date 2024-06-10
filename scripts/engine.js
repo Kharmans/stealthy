@@ -392,8 +392,11 @@ export default class Engine {
 
     // Hidden doors can only be spotted if they are in range
     const maxRange = stealthyFlags?.maxRange ?? Infinity;
-    const ray = new Ray(doorControl.center, visionSource.object.center);
-    const distance = canvas.grid.measureDistances([{ ray }])[0];
+    const v12 = Math.floor(game.version) >= 12;
+    const distance = (v12)
+      ? canvas.grid.measurePath([visionSource.object.center, doorControl.center]).distance
+      : canvas.grid.measureDistance(visionSource.object.center, doorControl.center);
+    
     if (distance > maxRange) return false;
 
     // Now just compare the perception and the door's stealth
