@@ -51,7 +51,7 @@ export class EnginePF1 extends Engine {
 
   async setValueInEffect(flag, skill, value, sourceEffect) {
     const token = flag.token;
-    let effect = duplicate(sourceEffect);
+    let effect = foundry.utils.duplicate(sourceEffect);
     if (!('stealthy' in effect.flags))
       effect.flags.stealthy = {};
     effect.flags.stealthy[skill] = value;
@@ -142,7 +142,7 @@ export class EnginePF1 extends Engine {
       await actor.createEmbeddedDocuments('Item', [effect]);
     }
     else {
-      let update = duplicate(hidden.toObject(false));
+      let update = foundry.utils.duplicate(hidden.toObject(false));
       update.system.active = true;
       update.flags.stealthy = flag;
       await actor.updateEmbeddedDocuments('Item', [update]);
@@ -179,12 +179,12 @@ export class EnginePF1 extends Engine {
       await actor.createEmbeddedDocuments('Item', [effect]);
     }
     else {
-      let update = duplicate(spot.toObject(false));
+      let update = foundry.utils.duplicate(spot.toObject(false));
       update.system.active = true;
       update.flags.stealthy = flag;
       await actor.updateEmbeddedDocuments('Item', [update]);
     }
-    canvas.perception.update({ initializeVision: true }, true);
+    stealthy.refreshPerception();
   }
 }
 

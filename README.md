@@ -36,7 +36,7 @@ A game setting individually controls whether stealth or perception roll results 
 * Default for stealth
 * Banked rolls are actually stored in an effect or item on the actor.
 * Banked rolls are deleted by deleting the effect they are banked in.
-* Rolling a stealth skill check will apply the *Hidden* effect to the actor and bank the result there for later comparisons, replacing an existing banking if the *Hidden* effect is already present. Stealthy's default *Hidden* effect can be overriden by adding a custom Hidden effect in *Convenient Effects*. ***See [Handling Hidden removal](#handling-hidden-removal)***
+* Rolling a stealth skill check will apply the *Hidden* effect to the actor and bank the result there for later comparisons, replacing an existing banking if the *Hidden* effect is already present. Stealthy's default *Hidden* effect can be overriden by adding a custom Hidden effect in *Convenient Effects* or *Condition Lab & Triggler*. ***See [Handling Hidden removal](#handling-hidden-removal)***
 * Rolling a perception check will add a *Spot* effect to the actor to bank the roll. The default *Spot* effect can be overriden as well.
 
 ![stealth-roll](https://user-images.githubusercontent.com/16523503/209989026-e0d2dad2-8dc1-459c-8824-a2332ce8a9cd.gif)
@@ -79,6 +79,7 @@ Stealthy will not automatically remove a banked stealth roll - the dnd5e [Skulke
 * [socketlib](https://github.com/manuelVo/foundryvtt-socketlib)
 ## Optional modules
 * [Active Token Effects](https://foundryvtt.com/packages/ATL)
+* [Condition Lab & Triggler](https://foundryvtt.com/packages/condition-lab-triggler)
 * [DFreds Convenient Effects](https://foundryvtt.com/packages/dfreds-convenient-effects)
 * [Vision5e](https://foundryvtt.com/packages/vision-5e)
 * [Visual Active Effects](https://foundryvtt.com/packages/visual-active-effects)

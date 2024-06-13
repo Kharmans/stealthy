@@ -100,6 +100,9 @@ Hooks.once('init', () => {
   if (game.dfreds?.effectInterface) {
     sources['ce'] = "stealthy.source.ce.name";
   }
+  if (game?.clt) {
+    sources['clt'] = "stealthy.source.clt.name";
+  }
 
   game.settings.register(Stealthy.MODULE_ID, 'hiddenSource', {
     name: "stealthy.hidden.source",

@@ -1,3 +1,7 @@
+# v4.3.0
+* Added Condition Lab & Triggler support for Active Effect customizations.
+* Centralized the refresh perception calls
+
 # v4.2.2
 * Fix a v12 deprecation warning when testing distance to hidden doors
 

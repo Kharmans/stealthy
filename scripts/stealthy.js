@@ -62,7 +62,12 @@ export class Stealthy {
 
   refreshPerception() {
     Stealthy.log(`RefreshPerception`);
-    canvas.perception.update({ initializeVision: true }, true);
+    canvas.perception.update({
+      refreshLighting: true,
+      refreshVision: true,
+      refreshSounds: true,
+      refreshOcclusion: true
+    });
   }
 
   async getPerceptionBanking() {

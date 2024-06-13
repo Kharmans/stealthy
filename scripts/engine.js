@@ -22,6 +22,7 @@ export default class Engine {
 
 
     this.warnedMissingCE = false;
+    this.warnedMissingCLT = false;
 
     this.defaultDetectionModes = [
       'basicSight',
@@ -120,7 +121,7 @@ export default class Engine {
 
   async setValueInEffect(flag, skill, value, sourceEffect) {
     const token = flag.token;
-    let effect = duplicate(sourceEffect);
+    let effect = foundry.utils.duplicate(sourceEffect);
     if (!('stealthy' in effect.flags))
       effect.flags.stealthy = {};
     effect.flags.stealthy[skill] = value;
@@ -209,7 +210,7 @@ export default class Engine {
 
   async setPerceptionValue(flag, value) {
     await this.setValue('perception', flag, value);
-    canvas.perception.update({ initializeVision: true }, true);
+    stealthy.refreshPerception();
   }
 
   async bankStealth(token, value) {
@@ -233,7 +234,7 @@ export default class Engine {
   }
 
   rollPerception() {
-    canvas.perception.update({ initializeVision: true }, true);
+    stealthy.refreshPerception();
   }
 
   findHiddenEffect(actor) {
@@ -307,6 +308,19 @@ export default class Engine {
           console.error(`stealthy | Convenient Effects couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CE or select a different effect source in Game Settings`);
         }
       }
+      else if (source === 'clt') {
+        if (game.clt?.getCondition(name)) {
+          await game.clt.applyCondition(name, actor);
+          effect = actor.effects.find(e => name === (v10 ? e.label : e.name));
+        }
+        if (!effect && !this.warnedMissingCLT) {
+          this.warnedMissingCLT = true;
+          if (game.user.isGM)
+            ui.notifications.warn(
+              `${game.i18n.localize('stealthy.source.clt.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.clt.afterLabel')}`);
+          console.error(`stealthy | Combat Utility Belt couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CLT or select a different effect source in Game Settings`);
+        }
+      }
 
       // If we haven't found an ouside source, create the default one
       if (!effect) {
@@ -316,7 +330,7 @@ export default class Engine {
       }
     }
 
-    effect = duplicate(effect);
+    effect = foundry.utils.duplicate(effect);
     effect.flags.stealthy = flag;
     effect.disabled = false;
     await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
@@ -341,7 +355,7 @@ export default class Engine {
       source: game.settings.get(Stealthy.MODULE_ID, 'spotSource'),
       makeEffect: this.makeSpotEffectMaker(this.spotName)
     });
-    canvas.perception.update({ initializeVision: true }, true);
+    stealthy.refreshPerception();
   }
 
   getLightExposure(token) {

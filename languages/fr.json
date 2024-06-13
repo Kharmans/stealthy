@@ -66,8 +66,13 @@
         "beforeLabel": "Impossible de trouver l'effet",
         "afterLabel": "dans CE, en utilisant la valeur par défaut de Stealthy à la place"
       },
-      "ae": "Stealthy (icon and token effect)",
-      "min": "Stealthy (icon only)"
+      "clt": {
+        "name": "Condition Lab & Triggler",
+        "beforeLabel": "Impossible de trouver l'effet",
+        "afterLabel": "dans CLT, en utilisant la valeur par défaut de Stealthy à la place"
+      },
+      "ae": "Stealthy",
+      "min": "Stealthy (no token effect)"
     },
     "schema": {
       "name": "Schema Version",

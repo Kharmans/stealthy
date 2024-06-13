@@ -66,8 +66,13 @@
         "beforeLabel": "Couldn't find effect",
         "afterLabel": "in CE, using Stealthy's default instead"
       },
-      "ae": "Stealthy (icon and token effect)",
-      "min": "Stealthy (icon only)"
+      "clt": {
+        "name": "Condition Lab & Triggler",
+        "beforeLabel": "Couldn't find effect",
+        "afterLabel": "in CLT, using Stealthy's default instead"
+      },
+      "ae": "Stealthy",
+      "min": "Stealthy (no token effect)"
     },
     "schema": {
       "name": "Schema Version",
