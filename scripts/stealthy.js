@@ -12,6 +12,21 @@ export class Stealthy {
       this.socket.register('GetPerceptionBanking', this.getPerceptionBanking);
       this.socket.register('RefreshPerception', this.refreshPerception);
     });
+    const v11 = Math.floor(game.version) < 12;
+    if (v11) {
+      this.refreshOptions = {
+        refreshLighting: true,
+        refreshVision: true,
+        refreshSounds: true
+      };
+    } else {
+      this.refreshOptions = {
+        refreshLighting: true,
+        refreshVision: true,
+        refreshSounds: true,
+        refreshOcclusion: true
+      };
+    }
   }
 
   getBankedPerception(token) {
@@ -62,12 +77,7 @@ export class Stealthy {
 
   refreshPerception() {
     Stealthy.log(`RefreshPerception`);
-    canvas.perception.update({
-      refreshLighting: true,
-      refreshVision: true,
-      refreshSounds: true,
-      refreshOcclusion: true
-    });
+    canvas.perception.update(stealthy.refreshOptions);
   }
 
   async getPerceptionBanking() {
