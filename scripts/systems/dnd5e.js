@@ -241,7 +241,7 @@ class Engine5e extends Engine {
         }
       }
       else {
-        let disadvantageRoll = await new Roll(`1d20`).evaluate({ async: true });
+        const disadvantageRoll = await new Roll(`1d20`).evaluate();
         const delta = dice.results[0].result - disadvantageRoll.total;
         if (delta > 0) {
           perception.disadvantaged -= delta;

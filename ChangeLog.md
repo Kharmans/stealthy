@@ -1,3 +1,7 @@
+# v4.3.1
+* Fix Roll.evaluate warning in V12
+* Update pt-BR.json (thanks Kharmans)
+
 # v4.3.0
 * Added Condition Lab & Triggler support for Active Effect customizations.
 * Centralized the refresh perception calls
