@@ -1,4 +1,5 @@
 # v4.3.2
+* Added a small binoculars icon over the banked perception value in the token HUD
 * Fix module.json warning
 * Disambiguate version naming in tests
 
