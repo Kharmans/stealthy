@@ -97,13 +97,13 @@ export class EnginePF1 extends Engine {
   }
 
   findHiddenEffect(actor) {
-    const v10 = Math.floor(game.version) < 11;
-    return actor?.items.find((i) => i.system.active && (v10 ? i.label : i.name) === 'Hidden');
+    const beforeV11 = Math.floor(game.version) < 11;
+    return actor?.items.find((i) => i.system.active && (beforeV11 ? i.label : i.name) === 'Hidden');
   }
 
   findSpotEffect(actor) {
-    const v10 = Math.floor(game.version) < 11;
-    return actor?.items.find((i) => i.system.active && (v10 ? i.label : i.name) === 'Spot');
+    const beforeV11 = Math.floor(game.version) < 11;
+    return actor?.items.find((i) => i.system.active && (beforeV11 ? i.label : i.name) === 'Spot');
   }
 
   makeHiddenEffectMaker(name) {
@@ -123,8 +123,8 @@ export class EnginePF1 extends Engine {
 
   async updateOrCreateHiddenEffect(actor, flag) {
     let hidden = this.findHiddenEffect(actor);
-    const v10 = Math.floor(game.version) < 11;
-    hidden ??= actor?.items.find((i) => (v10 ? i.label : i.name) === 'Hidden');
+    const beforeV11 = Math.floor(game.version) < 11;
+    hidden ??= actor?.items.find((i) => (beforeV11 ? i.label : i.name) === 'Hidden');
     if (!hidden) {
       const effect = {
         "name": "Hidden",
@@ -154,8 +154,8 @@ export class EnginePF1 extends Engine {
     let spot = this.findSpotEffect(actor);
 
     // PF1 buffs can be disabled, if so, look for one already on the actor
-    const v10 = Math.floor(game.version) < 11;
-    spot ??= actor?.items.find((i) => (v10 ? i.label : i.name) === 'Spot');
+    const beforeV11 = Math.floor(game.version) < 11;
+    spot ??= actor?.items.find((i) => (beforeV11 ? i.label : i.name) === 'Spot');
     if (!spot) {
       const effect = {
         "name": "Spot",

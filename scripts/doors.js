@@ -7,10 +7,10 @@ export default class Doors {
       Stealthy.MODULE_ID,
       "WallConfig.prototype._updateObject",
       async function (wrapped, event, formData) {
-        const v10 = Math.floor(game.version) < 11;
+        const beforeV11 = Math.floor(game.version) < 11;
         let result = await wrapped(event, formData);
         Stealthy.log('WallConfig.prototype._updateObject', { me: this, event, formData, result });
-        if (v10) {
+        if (beforeV11) {
           if (result) result = Doors.UpdateHiddenDoor(this, formData);
         } else {
           result = Doors.UpdateHiddenDoor(this, formData);
@@ -49,8 +49,8 @@ export default class Doors {
   static RenderHiddenDoor(wallConfig, html, css) {
     Stealthy.log('RenderHiddenDoor', { wallConfig, html, css });
     if (css.document.door == 1) {
-      const v10 = Math.floor(game.version) < 11;
-      if (v10) {
+      const beforeV11 = Math.floor(game.version) < 11;
+      if (beforeV11) {
         const hiddenDoorBlock = `
           <fieldset>
             <legend><i class="fa-solid fa-piggy-bank"></i> Stealthy</legend>

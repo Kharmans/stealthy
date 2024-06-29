@@ -84,9 +84,6 @@
       "flags": {}
     }
   ],
-  "templates": [
-    "templates/detectionModes.hbs"
-  ],
   "socket": true,
   "url": "https://github.com/Eligarf/stealthy",
   "manifest": "replaced",

@@ -1,3 +1,7 @@
+# v4.3.2
+* Fix module.json warning
+* Disambiguate version naming in tests
+
 # v4.3.1
 * Fix Roll.evaluate warning in V12
 * Update pt-BR.json (thanks Kharmans)

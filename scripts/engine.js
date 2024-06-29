@@ -238,13 +238,13 @@ export default class Engine {
   }
 
   findHiddenEffect(actor) {
-    const v10 = Math.floor(game.version) < 11;
-    return actor?.effects.find((e) => !e.disabled && this.hiddenName === (v10 ? e.label : e.name));
+    const beforeV11 = Math.floor(game.version) < 11;
+    return actor?.effects.find((e) => !e.disabled && this.hiddenName === (beforeV11 ? e.label : e.name));
   }
 
   findSpotEffect(actor) {
-    const v10 = Math.floor(game.version) < 11;
-    return actor?.effects.find((e) => !e.disabled && this.spotName === (v10 ? e.label : e.name));
+    const beforeV11 = Math.floor(game.version) < 11;
+    return actor?.effects.find((e) => !e.disabled && this.spotName === (beforeV11 ? e.label : e.name));
   }
 
   makeHiddenEffectMaker(name) {
@@ -290,15 +290,15 @@ export default class Engine {
   }
 
   async updateOrCreateEffect({ name, actor, flag, source, makeEffect }) {
-    const v10 = Math.floor(game.version) < 11;
-    let effect = actor.effects.find((e) => name === (v10 ? e.label : e.name));
+    const beforeV11 = Math.floor(game.version) < 11;
+    let effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
 
     if (!effect) {
       // See if we can source from outside
       if (source === 'ce') {
         if (game.dfreds?.effectInterface?.findEffectByName(name)) {
           await game.dfreds.effectInterface.addEffect({ effectName: name, uuid: actor.uuid });
-          effect = actor.effects.find((e) => name === (v10 ? e.label : e.name));
+          effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
         }
         if (!effect && !this.warnedMissingCE) {
           this.warnedMissingCE = true;
@@ -311,7 +311,7 @@ export default class Engine {
       else if (source === 'clt') {
         if (game.clt?.getCondition(name)) {
           await game.clt.applyCondition(name, actor);
-          effect = actor.effects.find(e => name === (v10 ? e.label : e.name));
+          effect = actor.effects.find(e => name === (beforeV11 ? e.label : e.name));
         }
         if (!effect && !this.warnedMissingCLT) {
           this.warnedMissingCLT = true;
@@ -406,10 +406,10 @@ export default class Engine {
 
     // Hidden doors can only be spotted if they are in range
     const maxRange = stealthyFlags?.maxRange ?? Infinity;
-    const v12 = Math.floor(game.version) >= 12;
-    const distance = (v12)
-      ? canvas.grid.measurePath([visionSource.object.center, doorControl.center]).distance
-      : canvas.grid.measureDistance(visionSource.object.center, doorControl.center);
+    const beforeV12 = Math.floor(game.version) < 12;
+    const distance = (beforeV12)
+      ? canvas.grid.measureDistance(visionSource.object.center, doorControl.center)
+      : canvas.grid.measurePath([visionSource.object.center, doorControl.center]).distance;
     
     if (distance > maxRange) return false;
 
