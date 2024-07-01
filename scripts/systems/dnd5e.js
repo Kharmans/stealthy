@@ -6,6 +6,10 @@ class Engine5e extends Engine {
 
   constructor() {
     super();
+  }
+
+  init() {
+    super.init();
 
     if (game.modules.get("vision-5e")?.active) {
       this.defaultDetectionModes.push(
@@ -79,6 +83,16 @@ class Engine5e extends Engine {
       },
       default: 'inCombat'
     });
+  }
+
+  setup() {
+    super.setup();
+
+    const hiddenSource = game.settings.get(Stealthy.MODULE_ID, 'hiddenSource');
+    const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
+    if (hiddenSource === 'hiding' && hidingAvailable) {
+      this.hiding = game.i18n.localize(hidingAvailable);
+    }
 
     Hooks.on('dnd5e.rollSkill', async (actor, roll, skill) => {
       if (skill === game.settings.get(Stealthy.MODULE_ID, 'stealthKey')) {
@@ -95,6 +109,20 @@ class Engine5e extends Engine {
         .insertBefore($('[name="stealthy.perceptionDisadvantage"]')
           .parents('div.form-group:first'));
     });
+  }
+
+  getSettingsParameters(version) {
+    let settings = super.getSettingsParameters(version);
+    const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
+    if (hidingAvailable) {
+      settings.hiddenLabel.default = 'EFFECT.DND5E.StatusHiding';
+      settings.hiddenLabel.hint = 'stealthy.dnd5e.hiding.hint';
+      settings.hiddenIcon.default = 'systems/dnd5e/icons/svg/statuses/hiding.svg';
+      settings.hiddenSource.choices['hiding'] = 'stealthy.dnd5e.hiding.choice';
+      settings.hiddenSource.default = 'hiding';
+      settings.hiddenIcon.hint = 'stealthy.dnd5e.hiding.iconhint';
+    }
+    return settings;
   }
 
   static LIGHT_LABELS = ['dark', 'dim', 'bright', 'bright'];
@@ -179,8 +207,8 @@ class Engine5e extends Engine {
     const flag = super.getPerceptionFlag(token);
     if (flag) return flag;
     const prcKey = game.settings.get(Stealthy.MODULE_ID, 'perceptionKey');
-    const passive = token.actor.system?.skills?.[prcKey]?.passive ?? -100;
-    const disadvantagedPassive = (token.actor.flags?.['midi-qol']?.disadvantage?.skill?.[prcKey] > 0) ? passive : passive - 5;
+    const passive = token.actor?.system?.skills?.[prcKey]?.passive ?? -100;
+    const disadvantagedPassive = (token.actor?.flags?.['midi-qol']?.disadvantage?.skill?.[prcKey] > 0) ? passive : passive - 5;
     return {
       token,
       passive: true,
@@ -209,7 +237,7 @@ class Engine5e extends Engine {
       value = { normal: value, disadvantaged: value - 5 };
     }
     if (stealthy.perceptionToActor) {
-      await this.updateOrCreateSpotEffect(token.actor, { perception: value });
+      await this.updateOrCreatePerceptionEffect(token.actor, { perception: value });
     } else {
       await this.bankRollOnToken(token, 'perception', value);
     }
@@ -219,12 +247,35 @@ class Engine5e extends Engine {
     Stealthy.log('Stealthy5e.rollStealth', { actor, roll });
 
     if (stealthy.stealthToActor) {
-      await this.updateOrCreateHiddenEffect(actor, { stealth: roll.total });
+      await this.updateOrCreateStealthEffect(actor, { stealth: roll.total });
     } else {
       await this.bankRollOnToken(actor, 'stealth', roll.total);
     }
 
     super.rollStealth();
+  }
+
+  findStealthEffect(actor) {
+    if (this.hiding) {
+      return actor?.effects.find((e) => !e.disabled && this.hiding === e.name);
+    }
+    return super.findStealthEffect(actor);
+  }
+
+  async updateOrCreateStealthEffect(actor, flag) {
+    if (!this.hiding) {
+      return await super.updateOrCreateStealthEffect(actor, flag);
+    }
+
+    await actor.toggleStatusEffect('hiding', {active: true});
+    const beforeV11 = Math.floor(game.version) < 11;
+    let effect = actor.effects.find((e) => this.hiding === (beforeV11 ? e.label : e.name));
+    Stealthy.log('hiding', effect);
+    effect = foundry.utils.duplicate(effect);
+    effect.flags.stealthy = flag;
+    effect.disabled = false;
+    await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
+    stealthy.socket.executeForEveryone('RefreshPerception');
   }
 
   async rollPerception(actor, roll) {
@@ -260,7 +311,7 @@ class Engine5e extends Engine {
     }
 
     if (stealthy.perceptionToActor) {
-      await this.updateOrCreateSpotEffect(actor, { perception });
+      await this.updateOrCreatePerceptionEffect(actor, { perception });
     } else {
       await this.bankRollOnToken(actor, 'perception', perception);
     }
@@ -268,9 +319,9 @@ class Engine5e extends Engine {
     super.rollPerception();
   }
 
-  makeSpotEffectMaker(name) {
+  makePerceptionEffectMaker(name) {
     return (flag, source) => {
-      let effect = super.makeSpotEffectMaker(name)(flag, source);
+      let effect = super.makePerceptionEffectMaker(name)(flag, source);
       if (game.combat) effect.duration = { turns: 1, seconds: 6 };
       return effect;
     };
@@ -283,6 +334,7 @@ Hooks.once('init', () => {
     const systemEngine = new Engine5e();
     if (systemEngine) {
       window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+      systemEngine.init();
     }
   }
 });

@@ -5,20 +5,22 @@ class Engine4e extends Engine {
 
   constructor() {
     super();
+  }
 
-    Hooks.once('setup', () => {
-      const usesStealth = `uses ${game.i18n.localize('DND4E.SkillStl')}.`;
-      const usesPerception = `uses ${game.i18n.localize('DND4E.SkillPrc')}.`;
-      Stealthy.log('Localized Chat Tags', { usesStealth, usesPerception });
+  setup() {
+    super.setup();
+    
+    const usesStealth = `uses ${game.i18n.localize('DND4E.SkillStl')}.`;
+    const usesPerception = `uses ${game.i18n.localize('DND4E.SkillPrc')}.`;
+    Stealthy.log('Localized Chat Tags', { usesStealth, usesPerception });
 
-      Hooks.on('createChatMessage', async (message, options, id) => {
-        if (message.flavor.endsWith(usesStealth)) {
-          await this.rollStealth(message, options, id);
-        }
-        else if (message.flavor.endsWith(usesPerception)) {
-          await this.rollPerception(message, options, id);
-        }
-      });
+    Hooks.on('createChatMessage', async (message, options, id) => {
+      if (message.flavor.endsWith(usesStealth)) {
+        await this.rollStealth(message, options, id);
+      }
+      else if (message.flavor.endsWith(usesPerception)) {
+        await this.rollPerception(message, options, id);
+      }
     });
   }
 
@@ -64,6 +66,7 @@ Hooks.once('init', () => {
     const systemEngine = new Engine4e();
     if (systemEngine) {
       window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+      systemEngine.init();
     }
   }
 });

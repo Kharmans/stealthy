@@ -1,5 +1,6 @@
 import { Stealthy } from "./stealthy.js";
 import Doors from "./doors.js";
+import { DetectionModesApplicationClass } from "./detectionModesMenu.js";
 
 export default class Engine {
 
@@ -16,6 +17,7 @@ export default class Engine {
     //     const systemEngine = new system-engine();
     //     if (systemEngine) {
     //       window[Stealthy.MODULE_ID] = new Stealthy(systemEngine);
+    //       systemEngine.init();
     //     }
     //   }
     // });
@@ -32,13 +34,233 @@ export default class Engine {
     ];
 
     Hooks.once('setup', () => {
-      this.hiddenName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
-      this.spotName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
-      Stealthy.log(`hiddenName='${this.hiddenName}', spotName='${this.spotName}'`);
-      if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
-        Doors.initialize();
-      }
+      this.setup();
     });
+
+    Hooks.once('ready', () => {
+      this.ready();
+    });
+  }
+
+  init() {
+    const module = game.modules.get(Stealthy.MODULE_ID);
+    const moduleVersion = module.version;
+    const settings = this.getSettingsParameters(moduleVersion);
+
+    game.settings.registerMenu(Stealthy.MODULE_ID, "detectionModesMenu", {
+      name: "stealthy.detectionModesMenu.name",
+      label: "stealthy.detectionModesMenu.label",
+      hint: "stealthy.detectionModesMenu.hint",
+      icon: "fas fa-wrench",
+      type: DetectionModesApplicationClass,
+      restricted: true,
+    });
+
+    game.settings.register(Stealthy.MODULE_ID, 'allowedDetectionModes', settings.allowedDetectionModes);
+    game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', settings.friendlyStealth);
+    game.settings.register(Stealthy.MODULE_ID, 'playerHud', settings.playerHud);
+    game.settings.register(Stealthy.MODULE_ID, 'exposure', settings.exposure);
+    game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', settings.spotSecretDoors);
+
+    game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', settings.stealthToActor);
+    game.settings.register(Stealthy.MODULE_ID, 'perceptionToActor', settings.perceptionToActor);
+    game.settings.register(Stealthy.MODULE_ID, 'hiddenSource', settings.hiddenSource);
+    game.settings.register(Stealthy.MODULE_ID, 'hiddenIcon', settings.hiddenIcon);
+    game.settings.register(Stealthy.MODULE_ID, 'spotSource', settings.spotSource);
+    game.settings.register(Stealthy.MODULE_ID, 'spotIcon', settings.spotIcon);
+
+    game.settings.register(Stealthy.MODULE_ID, 'hiddenLabel', settings.hiddenLabel);
+    game.settings.register(Stealthy.MODULE_ID, 'spotLabel', settings.spotLabel);
+
+    game.settings.register(Stealthy.MODULE_ID, 'logLevel', settings.logLevel);
+    game.settings.register(Stealthy.MODULE_ID, 'schema', settings.schema);
+    game.settings.register(Stealthy.MODULE_ID, 'activeSpot', settings.activeSpot);
+
+    Stealthy.log(`${moduleVersion}: init`);
+  }
+
+  setup() {
+    this.hiddenName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
+    this.spotName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
+    Stealthy.log(`hiddenName='${this.hiddenName}', spotName='${this.spotName}'`);
+    if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
+      Doors.setup();
+    }
+  }
+
+  ready() {
+  }
+
+  getSettingsParameters(version) {
+    let sources = {
+      'none': "stealthy.source.min",
+      'ae': "stealthy.source.ae",
+    };
+    if (game.dfreds?.effectInterface) {
+      sources['ce'] = "stealthy.source.ce.name";
+    }
+    if (game?.clt) {
+      sources['clt'] = "stealthy.source.clt.name";
+    }
+
+    return {
+      stealthToActor: {
+        name: "stealthy.stealthToActor.name",
+        hint: "stealthy.stealthToActor.hint",
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: true,
+        onChange: value => {
+          stealthy.stealthToActor = value;
+        }
+      },
+      perceptionToActor: {
+        name: "stealthy.perceptionToActor.name",
+        hint: "stealthy.perceptionToActor.hint",
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false,
+        onChange: value => {
+          stealthy.perceptionToActor = value;
+        }
+      },
+      allowedDetectionModes: {
+        scope: 'world',
+        config: false,
+        type: Object,
+        default: {},
+      },
+      friendlyStealth: {
+        name: "stealthy.friendlyStealth.name",
+        scope: 'world',
+        config: true,
+        type: String,
+        choices: {
+          'allow': "stealthy.friendlyStealth.allow",
+          'inCombat': "stealthy.friendlyStealth.inCombat",
+          'ignore': "stealthy.friendlyStealth.ignore"
+        },
+        default: 'inCombat'
+      },
+      playerHud: {
+        name: "stealthy.playerHud.name",
+        hint: "stealthy.playerHud.hint",
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: false,
+      },
+      exposure: {
+        name: "stealthy.exposure.name",
+        hint: "stealthy.exposure.hint",
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        default: false,
+      },
+      spotSecretDoors: {
+        name: "stealthy.spotHiddenDoors.name",
+        hint: "stealthy.spotHiddenDoors.hint",
+        scope: 'world',
+        requiresReload: true,
+        config: true,
+        type: Boolean,
+        default: false,
+      },
+      hiddenSource: {
+        name: "stealthy.hidden.source",
+        hint: "stealthy.source.hint",
+        scope: 'world',
+        config: true,
+        type: String,
+        choices: sources,
+        default: 'ae'
+      },
+      hiddenIcon: {
+        name: "stealthy.hidden.icon",
+        hint: "stealthy.hidden.iconhint",
+        scope: 'world',
+        requiresReload: true,
+        config: true,
+        type: String,
+        filePicker: true,
+        default: 'icons/magic/perception/shadow-stealth-eyes-purple.webp'
+      },
+      spotSource: {
+        name: "stealthy.spot.source",
+        hint: "stealthy.source.hint",
+        scope: 'world',
+        config: true,
+        type: String,
+        choices: sources,
+        default: 'ae'
+      },
+      spotIcon: {
+        name: "stealthy.spot.icon",
+        hint: "stealthy.spot.iconhint",
+        scope: 'world',
+        requiresReload: true,
+        config: true,
+        type: String,
+        filePicker: true,
+        default: 'icons/commodities/biological/eye-blue.webp'
+      },
+      hiddenLabel: {
+        name: "stealthy.hidden.preloc.key",
+        hint: "stealthy.hidden.preloc.hint",
+        scope: 'world',
+        config: true,
+        type: String,
+        default: 'stealthy.hidden.name',
+        onChange: value => {
+          stealthy.engine.hiddenName = value;
+        }
+      },
+      spotLabel: {
+        name: "stealthy.spot.preloc.key",
+        scope: 'world',
+        config: true,
+        type: String,
+        default: 'stealthy.spot.name',
+        onChange: value => {
+          stealthy.engine.spotName = value;
+        }
+      },
+      logLevel: {
+        name: "stealthy.logLevel.name",
+        scope: 'client',
+        config: true,
+        type: String,
+        choices: {
+          'none': "stealthy.logLevel.none",
+          'debug': "stealthy.logLevel.debug",
+          'log': "stealthy.logLevel.log"
+        },
+        default: 'none'
+      },
+      schema: {
+        name: `${Stealthy.MODULE_ID}.schema.name`,
+        hint: `${Stealthy.MODULE_ID}.schema.hint`,
+        scope: 'world',
+        config: true,
+        type: String,
+        default: version,
+        onChange: value => {
+          const newValue = migrate(moduleVersion, value);
+          if (value != newValue) {
+            game.settings.set(MODULE_ID, 'schema', newValue);
+          }
+        }
+      },
+      activeSpot: {
+        scope: 'world',
+        config: false,
+        type: Boolean,
+        default: true,
+      },
+    };
   }
 
   mixInDefaults(settings) {
@@ -64,6 +286,7 @@ export default class Engine {
 
     for (const mode in allowedModes) {
       if (!allowedModes[mode]) continue;
+      if (mode === 'undefined') continue;
       if (!(mode in CONFIG.Canvas.detectionModes)) continue;
 
       Stealthy.log(`patching ${mode}`);
@@ -166,7 +389,7 @@ export default class Engine {
   getStealthFlag(token) {
     let flags = undefined;
     const actor = token?.actor;
-    const effect = this.findHiddenEffect(actor);
+    const effect = this.findStealthEffect(actor);
     if (effect) {
       flags = effect?.flags?.stealthy;
     }
@@ -182,7 +405,7 @@ export default class Engine {
   getPerceptionFlag(token) {
     let flags = undefined;
     const actor = token?.actor;
-    const effect = this.findSpotEffect(actor);
+    const effect = this.findPerceptionEffect(actor);
     if (effect) {
       flags = effect?.flags?.stealthy;
     }
@@ -215,7 +438,7 @@ export default class Engine {
 
   async bankStealth(token, value) {
     if (stealthy.stealthToActor) {
-      await this.updateOrCreateHiddenEffect(token.actor, { stealth: value });
+      await this.updateOrCreateStealthEffect(token.actor, { stealth: value });
     } else {
       await this.bankRollOnToken(token, 'stealth', value);
     }
@@ -223,7 +446,7 @@ export default class Engine {
 
   async bankPerception(token, value) {
     if (stealthy.perceptionToActor) {
-      await this.updateOrCreateSpotEffect(token.actor, { perception: value });
+      await this.updateOrCreatePerceptionEffect(token.actor, { perception: value });
     } else {
       await this.bankRollOnToken(token, 'perception', value);
     }
@@ -237,17 +460,17 @@ export default class Engine {
     stealthy.refreshPerception();
   }
 
-  findHiddenEffect(actor) {
+  findStealthEffect(actor) {
     const beforeV11 = Math.floor(game.version) < 11;
     return actor?.effects.find((e) => !e.disabled && this.hiddenName === (beforeV11 ? e.label : e.name));
   }
 
-  findSpotEffect(actor) {
+  findPerceptionEffect(actor) {
     const beforeV11 = Math.floor(game.version) < 11;
     return actor?.effects.find((e) => !e.disabled && this.spotName === (beforeV11 ? e.label : e.name));
   }
 
-  makeHiddenEffectMaker(name) {
+  makeStealthEffectMaker(name) {
     return (flag, source) => {
       let effect = {
         icon: game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon'),
@@ -255,7 +478,7 @@ export default class Engine {
         flags: {
           stealthy: flag,
         },
-        statuses: ['hidden'],
+        statuses: [name.toLowerCase()],
         changes: [],
       };
       effect[(Math.floor(game.version) < 11) ? 'label' : 'name'] = name;
@@ -273,7 +496,7 @@ export default class Engine {
     };
   }
 
-  makeSpotEffectMaker(name) {
+  makePerceptionEffectMaker(name) {
     return (flag, source) => {
       let effect = {
         icon: game.settings.get(Stealthy.MODULE_ID, 'spotIcon'),
@@ -294,31 +517,35 @@ export default class Engine {
     let effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
 
     if (!effect) {
-      // See if we can source from outside
-      if (source === 'ce') {
-        if (game.dfreds?.effectInterface?.findEffectByName(name)) {
-          await game.dfreds.effectInterface.addEffect({ effectName: name, uuid: actor.uuid });
-          effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
+      switch (source) {
+        case 'ce': {
+          if (game.dfreds?.effectInterface?.findEffectByName(name)) {
+            await game.dfreds.effectInterface.addEffect({ effectName: name, uuid: actor.uuid });
+            effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
+          }
+          if (!effect && !this.warnedMissingCE) {
+            this.warnedMissingCE = true;
+            if (game.user.isGM)
+              ui.notifications.warn(
+                `${game.i18n.localize('stealthy.source.ce.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.ce.afterLabel')}`);
+            console.error(`stealthy | Convenient Effects couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CE or select a different effect source in Game Settings`);
+          }
+          break;
         }
-        if (!effect && !this.warnedMissingCE) {
-          this.warnedMissingCE = true;
-          if (game.user.isGM)
-            ui.notifications.warn(
-              `${game.i18n.localize('stealthy.source.ce.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.ce.afterLabel')}`);
-          console.error(`stealthy | Convenient Effects couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CE or select a different effect source in Game Settings`);
-        }
-      }
-      else if (source === 'clt') {
-        if (game.clt?.getCondition(name)) {
-          await game.clt.applyCondition(name, actor);
-          effect = actor.effects.find(e => name === (beforeV11 ? e.label : e.name));
-        }
-        if (!effect && !this.warnedMissingCLT) {
-          this.warnedMissingCLT = true;
-          if (game.user.isGM)
-            ui.notifications.warn(
-              `${game.i18n.localize('stealthy.source.clt.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.clt.afterLabel')}`);
-          console.error(`stealthy | Condition Lab & Triggler couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CLT or select a different effect source in Game Settings`);
+
+        case 'clt': {
+          if (game.clt?.getCondition(name)) {
+            await game.clt.applyCondition(name, actor);
+            effect = actor.effects.find(e => name === (beforeV11 ? e.label : e.name));
+          }
+          if (!effect && !this.warnedMissingCLT) {
+            this.warnedMissingCLT = true;
+            if (game.user.isGM)
+              ui.notifications.warn(
+                `${game.i18n.localize('stealthy.source.clt.beforeLabel')} '${name}' ${game.i18n.localize('stealthy.source.clt.afterLabel')}`);
+            console.error(`stealthy | Condition Lab & Triggler couldn't find the '${name}' effect so Stealthy will use the default one. Add your customized effect to CLT or select a different effect source in Game Settings`);
+          }
+          break;
         }
       }
 
@@ -336,24 +563,24 @@ export default class Engine {
     await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
   }
 
-  async updateOrCreateHiddenEffect(actor, flag) {
+  async updateOrCreateStealthEffect(actor, flag) {
     await this.updateOrCreateEffect({
       name: this.hiddenName,
       actor,
       flag,
       source: game.settings.get(Stealthy.MODULE_ID, 'hiddenSource'),
-      makeEffect: this.makeHiddenEffectMaker(this.hiddenName)
+      makeEffect: this.makeStealthEffectMaker(this.hiddenName)
     });
     stealthy.socket.executeForEveryone('RefreshPerception');
   }
 
-  async updateOrCreateSpotEffect(actor, flag) {
+  async updateOrCreatePerceptionEffect(actor, flag) {
     await this.updateOrCreateEffect({
       name: this.spotName,
       actor,
       flag,
       source: game.settings.get(Stealthy.MODULE_ID, 'spotSource'),
-      makeEffect: this.makeSpotEffectMaker(this.spotName)
+      makeEffect: this.makePerceptionEffectMaker(this.spotName)
     });
     stealthy.refreshPerception();
   }
@@ -364,35 +591,35 @@ export default class Engine {
     const scene = token.scene;
     if (scene !== canvas.scene || !scene.tokenVision) return undefined;
 
-    let exposure = 'dark';
+    const beforeV12 = Math.floor(game.version) < 12;
+    const hasGlobal = (beforeV12) ? scene.globalLight : scene.environment.globalLight.enabled;
+    if (hasGlobal) return 'bright';
+
     const center = token.center;
+    const scale = scene.dimensions.size / scene.dimensions.distance;
+    
+    // function distSquared(a, b, az, bz) {
+    //   const xDiff = a.x - b.x;
+    //   const yDiff = a.y - b.y;
+    //   const zDiff = scale * (az - bz);
+    //   return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
+    // }
 
-    for (const light of canvas.effects.lightSources) {
-      if (!light.active) continue;
+    let lights = scene.lights
+      .map(light => light._object?.source)
+      .concat(scene.tokens.filter(t => t.object?.light?.active).map(t => t.object.light))
+      .filter(light => light?.shape?.contains(center.x, center.y));
+    // .filter(light => distSquared(center, light, token.document.elevation, light.elevation) < light.data.dim * light.data.dim);
 
-      const bright = light.data.bright;
-      const dim = light.data.dim;
+    if (!lights.length) return 'dark';
 
-      if (light.object === token) {
-        if (bright) return 'bright';
-        if (dim) exposure = 'dim';
-        continue;
-      }
-
-      if (!light.shape.contains(center.x, center.y)) continue;
-
-      if (light.ratio === 1) return 'bright';
-      if (light.ratio === 0) {
-        exposure = 'dim';
-        continue;
-      }
-
-      const distance = new Ray(light, center).distance;
-      if (distance <= bright) return 'bright';
-      exposure = 'dim';
-    }
-
-    return exposure;
+    const bright = lights.find(light =>
+      scale * ((beforeV12)
+        ? canvas.grid.measureDistance(center, light)
+        : canvas.grid.measurePath([center, light]).distance)
+      < light.data.bright
+    );
+    return (bright) ? 'bright' : 'dim';
   }
 
   canSpotDoor(doorControl, visionSource) {
@@ -410,7 +637,7 @@ export default class Engine {
     const distance = (beforeV12)
       ? canvas.grid.measureDistance(visionSource.object.center, doorControl.center)
       : canvas.grid.measurePath([visionSource.object.center, doorControl.center]).distance;
-    
+
     if (distance > maxRange) return false;
 
     // Now just compare the perception and the door's stealth
