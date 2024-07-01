@@ -89,9 +89,12 @@ class Engine5e extends Engine {
     super.setup();
 
     const hiddenSource = game.settings.get(Stealthy.MODULE_ID, 'hiddenSource');
-    const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
-    if (hiddenSource === 'hiding' && hidingAvailable) {
-      this.hiding = game.i18n.localize(hidingAvailable);
+    const beforeV12 = Math.floor(game.version) < 12;
+    if (!beforeV12) {
+      const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
+      if (hiddenSource === 'hiding' && hidingAvailable) {
+        this.hiding = game.i18n.localize(hidingAvailable);
+      }
     }
 
     Hooks.on('dnd5e.rollSkill', async (actor, roll, skill) => {
@@ -113,14 +116,17 @@ class Engine5e extends Engine {
 
   getSettingsParameters(version) {
     let settings = super.getSettingsParameters(version);
+    
     const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
     if (hidingAvailable) {
       settings.hiddenLabel.default = 'EFFECT.DND5E.StatusHiding';
-      settings.hiddenLabel.hint = 'stealthy.dnd5e.hiding.hint';
       settings.hiddenIcon.default = 'systems/dnd5e/icons/svg/statuses/hiding.svg';
-      settings.hiddenSource.choices['hiding'] = 'stealthy.dnd5e.hiding.choice';
-      settings.hiddenSource.default = 'hiding';
       settings.hiddenIcon.hint = 'stealthy.dnd5e.hiding.iconhint';
+      const beforeV12 = Math.floor(game.version) < 12;
+      if (!beforeV12) {
+        settings.hiddenSource.choices['hiding'] = 'stealthy.dnd5e.hiding.choice';
+        settings.hiddenSource.default = 'hiding';
+      }
     }
     return settings;
   }

@@ -1,5 +1,5 @@
 # v4.4.0
-* dnd5e: *Hiding* Status Effect can be used to bank stealth results
+* dnd5e: *Hiding* Status Effect can be used to bank stealth results (Foundry v12/dnd5e v3.2 only)
 * dnd5e: Handle vision-5e's "undefined" detection mode
 * Systems can specialize game settings defaults
 * Fix v12 lighting calculations

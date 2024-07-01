@@ -102,7 +102,6 @@
       },
       "hiding": {
         "choice": "Use 'Hiding' Status Effect",
-        "hint": "Cette chaîne sera envoyée via i18n.localize(). Changing these may affect overall automation of Stealthy's effects. If you want 'hiding', use 'EFFECT.DND5E.StatusHiding'",
         "iconhint": "Icône par défaut pour l'effet Détection (ignored if using Status Effect)"
       },
       "perceptionDisadvantage": {

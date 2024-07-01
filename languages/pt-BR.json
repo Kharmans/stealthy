@@ -102,7 +102,6 @@
       },
       "hiding": {
         "choice": "Use 'Hiding' Status Effect",
-        "hint": "Esta string será enviada através de i18n.localize(). Mudar isso pode afetar a automação geral dos efeitos do Stealthy.. If you want 'hiding', use 'EFFECT.DND5E.StatusHiding'",
         "iconhint": "Ícone padrão para o efeito Escondido (ignored if using Status Effect)"
       },
       "perceptionDisadvantage": {
