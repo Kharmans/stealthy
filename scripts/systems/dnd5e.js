@@ -126,6 +126,7 @@ class Engine5e extends Engine {
       if (!beforeV12) {
         settings.hiddenSource.choices['hiding'] = 'stealthy.dnd5e.hiding.choice';
         settings.hiddenSource.default = 'hiding';
+        settings.hiddenSource.requiresReload = true;
       }
     }
     return settings;
