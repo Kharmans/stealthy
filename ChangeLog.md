@@ -1,3 +1,7 @@
+# v4.4.1
+* Update pt-BR.json (thanks Kharmans)
+* Handle darkness sources properly
+
 # v4.4.0
 * dnd5e: *Hiding* Status Effect can be used to bank stealth results (Foundry v12/dnd5e v3.2 only)
 * dnd5e: Handle vision-5e's "undefined" detection mode

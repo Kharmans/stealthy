@@ -606,8 +606,9 @@ export default class Engine {
     // }
 
     let lights = scene.lights
-      .map(light => light._object?.source)
+      .map(light => beforeV12 ? light._object?.source : light._object?.lightSource)
       .concat(scene.tokens.filter(t => t.object?.light?.active).map(t => t.object.light))
+      .filter(light => !((beforeV12) ? light.isDarkness : light instanceof foundry.canvas.sources.PointDarknessSource))
       .filter(light => light?.shape?.contains(center.x, center.y));
     // .filter(light => distSquared(center, light, token.document.elevation, light.elevation) < light.data.dim * light.data.dim);
 
