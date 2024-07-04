@@ -44,6 +44,10 @@
       "dim": "Em Penumbra",
       "dark": "Em Escuridão"
     },
+    "gIDimThreshold": {
+      "name": "Global Illumination dim light threshold",
+      "hint": "On scenes with GI enabled, bright light exposure is assumed unless the darkness level exceeds the scene's GI threshold multiplied by this factor, yielding dim light. Use 1.0 to transition directly from bright to dark."
+    },
     "stealthToActor": {
       "name": "Acumular Furtividade no Ator",
       "hint": "Acumula as rolagens de Furtividade no efeito/item de um ator, ao invés do próprio ator."

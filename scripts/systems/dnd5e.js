@@ -334,6 +334,20 @@ class Engine5e extends Engine {
     };
   }
 
+  async updateOrCreatePerceptionEffect(actor, flag) {
+    await this.updateOrCreateEffect({
+      name: this.spotName,
+      actor,
+      flag,
+      source: game.settings.get(Stealthy.MODULE_ID, 'spotSource'),
+      makeEffect: this.makePerceptionEffectMaker(this.spotName),
+      tweakEffect: (effect) => {
+        if (game.combat) effect.duration = { turns: 1, seconds: 6 };
+      }
+    });
+    stealthy.refreshPerception();
+  }
+
 }
 
 Hooks.once('init', () => {

@@ -1,3 +1,9 @@
+# v4.5.0
+* Added Russian translation (thanks VirusNik21)
+* Stealthy's light exposure calculations work best in scenes without global illumination enabled, but I've added some support to try and hack a reasonable guess-timate when it is enabled.
+* Added a game setting in Stealthy to specify a dim light threshold to use in GI-enabled scenes for exposure purposes.
+* dnd5e: When banking perception once combat is active, force a duration on the Spot effect if an already existing effect is found.
+
 # v4.4.1
 * Update pt-BR.json (thanks Kharmans)
 * Handle darkness sources properly

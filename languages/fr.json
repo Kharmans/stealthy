@@ -44,6 +44,10 @@
       "dim": "in Dim light",
       "dark": "in Dark"
     },
+    "gIDimThreshold": {
+      "name": "Global Illumination dim light threshold",
+      "hint": "On scenes with GI enabled, bright light exposure is assumed unless the darkness level exceeds the scene's GI threshold multiplied by this factor, yielding dim light. Use 1.0 to transition directly from bright to dark."
+    },
     "stealthToActor": {
       "name": "Bank stealth rolls to actor",
       "hint": "Bank stealth rolls in an actor effect/item rather than the token."

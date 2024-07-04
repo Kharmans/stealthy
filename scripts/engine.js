@@ -60,6 +60,7 @@ export default class Engine {
     game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', settings.friendlyStealth);
     game.settings.register(Stealthy.MODULE_ID, 'playerHud', settings.playerHud);
     game.settings.register(Stealthy.MODULE_ID, 'exposure', settings.exposure);
+    game.settings.register(Stealthy.MODULE_ID, 'gIDimThreshold', settings.gIDimThreshold);
     game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', settings.spotSecretDoors);
 
     game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', settings.stealthToActor);
@@ -159,6 +160,19 @@ export default class Engine {
         config: true,
         type: Boolean,
         default: false,
+      },
+      gIDimThreshold: {
+        name: "stealthy.gIDimThreshold.name",
+        hint: "stealthy.gIDimThreshold.hint",
+        scope: 'world',
+        config: true,
+        type: Number,
+        default: 0.5,
+        range: {
+          min: 0,
+          max: 1,
+          step: 0.05
+        }
       },
       spotSecretDoors: {
         name: "stealthy.spotHiddenDoors.name",
@@ -512,7 +526,7 @@ export default class Engine {
     };
   }
 
-  async updateOrCreateEffect({ name, actor, flag, source, makeEffect }) {
+  async updateOrCreateEffect({ name, actor, flag, source, makeEffect, tweakEffect }) {
     const beforeV11 = Math.floor(game.version) < 11;
     let effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
 
@@ -558,6 +572,9 @@ export default class Engine {
     }
 
     effect = foundry.utils.duplicate(effect);
+    if (tweakEffect) {
+      tweakEffect(effect);
+    }
     effect.flags.stealthy = flag;
     effect.disabled = false;
     await actor.updateEmbeddedDocuments('ActiveEffect', [effect]);
@@ -592,12 +609,41 @@ export default class Engine {
     if (scene !== canvas.scene || !scene.tokenVision) return undefined;
 
     const beforeV12 = Math.floor(game.version) < 12;
-    const hasGlobal = (beforeV12) ? scene.globalLight : scene.environment.globalLight.enabled;
-    if (hasGlobal) return 'bright';
 
+    // If GI is on, check to see if we think it is dim or bright.
+    let exposure = 'dark';
     const center = token.center;
+    if (beforeV12) {
+      const darkness = scene.darkness;
+      if (scene.globalLight && darkness <= scene.globalLightThreshold) {
+        const factor = game.settings.get(Stealthy.MODULE_ID, 'gIDimThreshold');
+        exposure = (darkness <= factor * scene.globalLightThreshold) ? 'bright' : 'dim';
+      }
+    }
+    else {
+      const gl = scene.environment.globalLight;
+      if (gl.enabled) {
+        const darkness = canvas.effects.getDarknessLevel(center, token.document.elevation);
+        if (darkness <= gl.darkness.max) {
+          const factor = game.settings.get(Stealthy.MODULE_ID, 'gIDimThreshold');
+          exposure = (darkness <= factor * gl.darkness.max) ? 'bright' : 'dim';
+        }
+      }
+    }
+
+    // If GI is on, need to explicitly check to see if token is in darkness source, after which we
+    // can short-circuit other checks if we are in bright GI
+    if (exposure !== 'dark') {
+      const lights = scene.lights
+        .map(light => beforeV12 ? light._object?.source : light._object?.lightSource)
+        .concat(scene.tokens.filter(t => t.object?.light?.active).map(t => t.object.light))
+        .filter(light => (beforeV12) ? light.isDarkness : light instanceof foundry.canvas.sources.PointDarknessSource)
+        .filter(light => light?.shape?.contains(center.x, center.y));
+      if (lights.length) return 'dark';
+      if (exposure === 'bright') return exposure;
+    }
+
     const scale = scene.dimensions.size / scene.dimensions.distance;
-    
     // function distSquared(a, b, az, bz) {
     //   const xDiff = a.x - b.x;
     //   const yDiff = a.y - b.y;
@@ -605,15 +651,16 @@ export default class Engine {
     //   return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
     // }
 
-    let lights = scene.lights
+    // Return the GI exposure if we aren't in any lights
+    const lights = scene.lights
       .map(light => beforeV12 ? light._object?.source : light._object?.lightSource)
       .concat(scene.tokens.filter(t => t.object?.light?.active).map(t => t.object.light))
       .filter(light => !((beforeV12) ? light.isDarkness : light instanceof foundry.canvas.sources.PointDarknessSource))
       .filter(light => light?.shape?.contains(center.x, center.y));
     // .filter(light => distSquared(center, light, token.document.elevation, light.elevation) < light.data.dim * light.data.dim);
+    if (!lights.length) return exposure;
 
-    if (!lights.length) return 'dark';
-
+    // Look for a light that shines brightly enough, otherwise we are dimly lit
     const bright = lights.find(light =>
       scale * ((beforeV12)
         ? canvas.grid.measureDistance(center, light)
