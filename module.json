@@ -82,6 +82,12 @@
       "name": "Português Brasileiro",
       "path": "languages/pt-BR.json",
       "flags": {}
+    },
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "languages/ru.json",
+      "flags": {}
     }
   ],
   "socket": true,

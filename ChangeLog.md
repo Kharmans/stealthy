@@ -1,3 +1,7 @@
+# v4.5.1
+* Update pt-BR.json (thanks Kharmans)
+* Add ru.json to module.json
+
 # v4.5.0
 * Added Russian translation (thanks VirusNik21)
 * Stealthy's light exposure calculations work best in scenes without global illumination enabled, but I've added some support to try and hack a reasonable guess-timate when it is enabled.
