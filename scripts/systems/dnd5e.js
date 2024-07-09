@@ -277,7 +277,6 @@ class Engine5e extends Engine {
     await actor.toggleStatusEffect('hiding', {active: true});
     const beforeV11 = Math.floor(game.version) < 11;
     let effect = actor.effects.find((e) => this.hiding === (beforeV11 ? e.label : e.name));
-    Stealthy.log('hiding', effect);
     effect = foundry.utils.duplicate(effect);
     effect.flags.stealthy = flag;
     effect.disabled = false;

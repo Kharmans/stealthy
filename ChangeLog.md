@@ -1,3 +1,6 @@
+# v4.5.2
+* use 'img' instead of 'icon' for V12 active effects
+
 # v4.5.1
 * Update pt-BR.json (thanks Kharmans)
 * Add ru.json to module.json

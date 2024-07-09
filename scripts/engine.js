@@ -2,6 +2,40 @@ import { Stealthy } from "./stealthy.js";
 import Doors from "./doors.js";
 import { DetectionModesApplicationClass } from "./detectionModesMenu.js";
 
+// return true if 'installed' (considered as a JRE version string) is
+// greater than or equal to 'required' (again, a JRE version string).
+function versionAtLeast(version, target) {
+
+  var a = version.split('.');
+  var b = target.split('.');
+
+  for (var i = 0; i < a.length; ++i) {
+    a[i] = Number(a[i]);
+  }
+  for (var i = 0; i < b.length; ++i) {
+    b[i] = Number(b[i]);
+  }
+  if (a.length == 2) {
+    a[2] = 0;
+  }
+
+  if (a[0] > b[0]) return true;
+  if (a[0] < b[0]) return false;
+
+  if (a[1] > b[1]) return true;
+  if (a[1] < b[1]) return false;
+
+  if (a[2] > b[2]) return true;
+  if (a[2] < b[2]) return false;
+
+  return true;
+}
+
+function migrate(moduleVersion, oldVersion) {
+  // ui.notifications.warn(`Updated Stealthy from ${oldVersion} to ${moduleVersion}`);
+  return moduleVersion;
+}
+
 export default class Engine {
 
   constructor() {
@@ -93,6 +127,9 @@ export default class Engine {
   }
 
   getSettingsParameters(version) {
+    const module = game.modules.get(Stealthy.MODULE_ID);
+    const moduleVersion = module.version;
+
     let sources = {
       'none': "stealthy.source.min",
       'ae': "stealthy.source.ae",
@@ -260,11 +297,12 @@ export default class Engine {
         scope: 'world',
         config: true,
         type: String,
-        default: version,
+        default: '',
         onChange: value => {
+          Stealthy.log(`Changing schema value to ${value}`);
           const newValue = migrate(moduleVersion, value);
           if (value != newValue) {
-            game.settings.set(MODULE_ID, 'schema', newValue);
+            game.settings.set(Stealthy.MODULE_ID, 'schema', newValue);
           }
         }
       },
@@ -487,7 +525,6 @@ export default class Engine {
   makeStealthEffectMaker(name) {
     return (flag, source) => {
       let effect = {
-        icon: game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon'),
         description: game.i18n.localize("stealthy.hidden.description"),
         flags: {
           stealthy: flag,
@@ -495,7 +532,10 @@ export default class Engine {
         statuses: [name.toLowerCase()],
         changes: [],
       };
-      effect[(Math.floor(game.version) < 11) ? 'label' : 'name'] = name;
+      const beforeV11 = Math.floor(game.version) < 11;
+      effect[beforeV11 ? 'label' : 'name'] = name;
+      const beforeV12 = Math.floor(game.version) < 12;
+      effect[beforeV12 ? 'icon' : 'img'] = game.settings.get(Stealthy.MODULE_ID, 'hiddenIcon');
 
       if (source === 'ae') {
         if (typeof ATLUpdate !== 'undefined') {
@@ -513,14 +553,16 @@ export default class Engine {
   makePerceptionEffectMaker(name) {
     return (flag, source) => {
       let effect = {
-        icon: game.settings.get(Stealthy.MODULE_ID, 'spotIcon'),
         description: game.i18n.localize("stealthy.spot.description"),
         flags: {
           stealthy: flag,
         },
         statuses: ['spot'],
       };
-      effect[(Math.floor(game.version) < 11) ? 'label' : 'name'] = name;
+      const beforeV11 = Math.floor(game.version) < 11;
+      effect[beforeV11 ? 'label' : 'name'] = name;
+      const beforeV12 = Math.floor(game.version) < 12;
+      effect[beforeV12 ? 'icon' : 'img'] = game.settings.get(Stealthy.MODULE_ID, 'spotIcon');
 
       return effect;
     };

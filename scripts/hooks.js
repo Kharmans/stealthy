@@ -1,11 +1,5 @@
 import { Stealthy } from "./stealthy.js";
 
-function migrate(moduleVersion, oldVersion) {
-
-  // ui.notifications.warn(`Updated Stealthy from ${oldVersion} to ${moduleVersion}`);
-  return moduleVersion;
-}
-
 Hooks.once('setup', () => {
   const module = game.modules.get(Stealthy.MODULE_ID);
   const moduleVersion = module.version;
@@ -15,8 +9,9 @@ Hooks.once('setup', () => {
 
   const schemaVersion = game.settings.get(Stealthy.MODULE_ID, 'schema');
   if (schemaVersion !== moduleVersion) {
+    Stealthy.log(`Found schema version ${schemaVersion}`);
     Hooks.once('ready', () => {
-      game.settings.set(Stealthy.MODULE_ID, 'schema', migrate(moduleVersion, schemaVersion));
+      game.settings.set(Stealthy.MODULE_ID, 'schema', moduleVersion);
     });
   }
 
@@ -110,7 +105,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
 Hooks.on('renderSettingsConfig', (app, html, data) => {
   const sections = [
     { label: "general", before: "friendlyStealth" },
-    { label: "effects", before: "stealthToActor"},
+    { label: "effects", before: "stealthToActor" },
     { label: "advanced", before: "hiddenLabel" },
     { label: "debug", before: "logLevel" },
   ];
