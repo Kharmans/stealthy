@@ -114,9 +114,15 @@ class Engine5e extends Engine {
     });
   }
 
+  buildDetectModePermission(mode, enabled) {
+    let permission = super.buildDetectModePermission(mode, enabled);
+    permission.lightBased = permission.enabled && mode != 'hearing';
+    return permission;
+  }
+
   getSettingsParameters(version) {
     let settings = super.getSettingsParameters(version);
-    
+
     const hidingAvailable = CONFIG?.DND5E.statusEffects?.hiding.name;
     if (hidingAvailable) {
       settings.hiddenLabel.default = 'EFFECT.DND5E.StatusHiding';
@@ -139,6 +145,7 @@ class Engine5e extends Engine {
     visionSource,
     tgtToken,
     detectionMode,
+    lightBased,
     stealthFlag,
     stealthValue,
     perceptionFlag
@@ -151,7 +158,7 @@ class Engine5e extends Engine {
     // perception means that stealth is being the active skill.
     const perceptionPair = perceptionFlag?.perception;
     const perceptionValue = (game.settings.get(Stealthy.MODULE_ID, 'perceptionDisadvantage'))
-      ? this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode })
+      ? this.adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode, lightBased })
       : this.adjustForDefaultConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode });
 
     Stealthy.logIfDebug(`${detectionMode} vs '${tgtToken.name}': ${perceptionValue} vs ${stealthValue}`, { stealthFlag, perceptionFlag });
@@ -168,11 +175,12 @@ class Engine5e extends Engine {
 
   // check target Token Lighting conditions via effects usage
   // look for effects that indicate Dim or Dark condition on the token
-  adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode }) {
+  adjustForLightingConditions({ perceptionPair, visionSource, source, tgtToken, detectionMode, lightBased }) {
     // Extract the normal perception values from the source
     const active = perceptionPair?.normal ?? perceptionPair;
     const passivePrc = source?.system?.skills?.[game.settings.get(Stealthy.MODULE_ID, 'perceptionKey')]?.passive ?? -100;
     const value = active ?? passivePrc;
+    if (!lightBased) return value;
 
     // What light band are we told we sit in?
     const exposure = this.getLightExposure(tgtToken) ?? 2;
@@ -188,8 +196,6 @@ class Engine5e extends Engine {
       case 'devilsSight':
         if (!lightBand) lightBand = 2;
         break;
-      case 'hearing':
-        return value;
       case undefined:
         if (visionSource.visionMode?.id === 'darkvision') lightBand += 1;
         break;
@@ -274,7 +280,7 @@ class Engine5e extends Engine {
       return await super.updateOrCreateStealthEffect(actor, flag);
     }
 
-    await actor.toggleStatusEffect('hiding', {active: true});
+    await actor.toggleStatusEffect('hiding', { active: true });
     const beforeV11 = Math.floor(game.version) < 11;
     let effect = actor.effects.find((e) => this.hiding === (beforeV11 ? e.label : e.name));
     effect = foundry.utils.duplicate(effect);

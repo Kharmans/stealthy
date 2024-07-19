@@ -1,3 +1,7 @@
+# v4.6.0
+* dnd5e: Added a check box to the detection modes configuration dialog, selecting which detection modes can be affected by dim light.
+* dnd5e: 3.3 compatible
+
 # v4.5.2
 * use 'img' instead of 'icon' for V12 active effects
 

@@ -31,11 +31,6 @@ function versionAtLeast(version, target) {
   return true;
 }
 
-function migrate(moduleVersion, oldVersion) {
-  // ui.notifications.warn(`Updated Stealthy from ${oldVersion} to ${moduleVersion}`);
-  return moduleVersion;
-}
-
 export default class Engine {
 
   constructor() {
@@ -71,8 +66,8 @@ export default class Engine {
       this.setup();
     });
 
-    Hooks.once('ready', () => {
-      this.ready();
+    Hooks.once('ready', async () => {
+      await this.ready();
     });
   }
 
@@ -90,7 +85,7 @@ export default class Engine {
       restricted: true,
     });
 
-    game.settings.register(Stealthy.MODULE_ID, 'allowedDetectionModes', settings.allowedDetectionModes);
+    game.settings.register(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES, settings.allowedDetectionModes);
     game.settings.register(Stealthy.MODULE_ID, 'friendlyStealth', settings.friendlyStealth);
     game.settings.register(Stealthy.MODULE_ID, 'playerHud', settings.playerHud);
     game.settings.register(Stealthy.MODULE_ID, 'exposure', settings.exposure);
@@ -111,6 +106,14 @@ export default class Engine {
     game.settings.register(Stealthy.MODULE_ID, 'schema', settings.schema);
     game.settings.register(Stealthy.MODULE_ID, 'activeSpot', settings.activeSpot);
 
+    // Back-compatibility settings, config must be false
+    game.settings.register(Stealthy.MODULE_ID, 'allowedDetectionModes', {
+      scope: 'world',
+      config: false,
+      type: Object,
+      default: {},
+    });
+
     Stealthy.log(`${moduleVersion}: init`);
   }
 
@@ -123,7 +126,73 @@ export default class Engine {
     }
   }
 
-  ready() {
+  buildDetectModePermission(mode, enabled) {
+    return { enabled };
+  }
+
+  async migrate_to_4_6() {
+    let modes = foundry.utils.deepClone(game.settings.get(Stealthy.MODULE_ID, "allowedDetectionModes"));
+    let changed = false;
+    for (let [k, v] of Object.entries(modes)) {
+      if (typeof v == "boolean") {
+        modes[k] = this.buildDetectModePermission(k, v);
+        changed = true;
+      }
+    }
+    if (changed) {
+      Stealthy.log('migrated detection mode settings for 4.6', modes);
+      await game.settings.set(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES, modes);
+    }
+  }
+
+  async migrate(moduleVersion, oldVersion) {
+    if (!versionAtLeast(oldVersion, '4.6.0')) {
+      await this.migrate_to_4_6();
+    }
+    return moduleVersion;
+  }
+
+  async ready() {
+    const module = game.modules.get(Stealthy.MODULE_ID);
+    const moduleVersion = module.version;
+    const schemaVersion = game.settings.get(Stealthy.MODULE_ID, 'schema');
+
+    if (schemaVersion !== moduleVersion) {
+      await this.migrate(moduleVersion, schemaVersion);
+      ui.notifications.info(`Updated Stealthy settings from ${moduleVersion} to ${moduleVersion}`);
+      await game.settings.set(Stealthy.MODULE_ID, 'schema', moduleVersion);
+    }
+
+    let allowedModes = game.settings.get(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES);
+    const changed = this.mixInDefaults(allowedModes);
+    if (changed) {
+      Stealthy.log('Allowed modes settings update', allowedModes);
+      await game.settings.set(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES, allowedModes);
+    }
+
+    for (const [mode, setting] of Object.entries(allowedModes)) {
+      if (!setting.enabled) continue;
+      if (mode === 'undefined' || !(mode in CONFIG.Canvas.detectionModes)) continue;
+
+      Stealthy.log(`patching ${mode}`);
+      libWrapper.register(
+        Stealthy.MODULE_ID,
+        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
+        function (wrapped, visionSource, target) {
+          if (!(wrapped(visionSource, target))) return false;
+          const engine = stealthy.engine;
+          if (target instanceof DoorControl)
+            return engine.canSpotDoor(target, visionSource);
+          const tgtToken = target?.document;
+          if (tgtToken instanceof TokenDocument)
+            return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode, setting.lightBased);
+          return true;
+        },
+        libWrapper.MIXED,
+        { perf_mode: libWrapper.PERF_FAST }
+      );
+    }
+    stealthy.refreshPerception();
   }
 
   getSettingsParameters(version) {
@@ -298,13 +367,6 @@ export default class Engine {
         config: true,
         type: String,
         default: '',
-        onChange: value => {
-          Stealthy.log(`Changing schema value to ${value}`);
-          const newValue = migrate(moduleVersion, value);
-          if (value != newValue) {
-            game.settings.set(Stealthy.MODULE_ID, 'schema', newValue);
-          }
-        }
       },
       activeSpot: {
         scope: 'world',
@@ -319,46 +381,12 @@ export default class Engine {
     let changed = false;
     for (const mode in CONFIG.Canvas.detectionModes) {
       if (!(mode in settings)) {
-        settings[mode] = this.defaultDetectionModes.includes(mode);
+        const enabled = this.defaultDetectionModes.includes(mode);
+        settings[mode] = this.buildDetectModePermission(mode, enabled);
         changed = true;
       }
     }
     return changed;
-  }
-
-  patchFoundry() {
-    let allowedModes = game.settings.get(Stealthy.MODULE_ID, 'allowedDetectionModes');
-    const changed = this.mixInDefaults(allowedModes);
-    if (changed) {
-      Hooks.once('ready', () => {
-        Stealthy.log('Allowed modes settings update', allowedModes);
-        game.settings.set(Stealthy.MODULE_ID, 'allowedDetectionModes', allowedModes);
-      });
-    }
-
-    for (const mode in allowedModes) {
-      if (!allowedModes[mode]) continue;
-      if (mode === 'undefined') continue;
-      if (!(mode in CONFIG.Canvas.detectionModes)) continue;
-
-      Stealthy.log(`patching ${mode}`);
-      libWrapper.register(
-        Stealthy.MODULE_ID,
-        `CONFIG.Canvas.detectionModes.${mode}._canDetect`,
-        function (wrapped, visionSource, target) {
-          if (!(wrapped(visionSource, target))) return false;
-          const engine = stealthy.engine;
-          if (target instanceof DoorControl)
-            return engine.canSpotDoor(target, visionSource);
-          const tgtToken = target?.document;
-          if (tgtToken instanceof TokenDocument)
-            return engine.checkDispositionAndCanDetect(visionSource, tgtToken, mode);
-          return true;
-        },
-        libWrapper.MIXED,
-        { perf_mode: libWrapper.PERF_FAST }
-      );
-    }
   }
 
   // deprecated
@@ -366,7 +394,7 @@ export default class Engine {
     return false;
   }
 
-  checkDispositionAndCanDetect(visionSource, tgtToken, detectionMode) {
+  checkDispositionAndCanDetect(visionSource, tgtToken, detectionMode, lightBased) {
     // Early out for buddies
     if (tgtToken?.disposition === visionSource.object.document?.disposition) {
       const friendlyStealth = game.settings.get(Stealthy.MODULE_ID, 'friendlyStealth');
@@ -383,6 +411,7 @@ export default class Engine {
       visionSource,
       tgtToken,
       detectionMode,
+      lightBased,
       stealthFlag,
       stealthValue: this.getStealthValue(stealthFlag),
       perceptionFlag,

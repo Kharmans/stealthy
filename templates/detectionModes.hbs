@@ -1,14 +1,56 @@
 <form action="#">
   <div class="allowed-detection-modes">
     <table>
-      {{#each detectionModes}}
-      <tr>
-        <td>
-          <input type="checkbox" name="{{@key}}" id="stealthy-{{@key}}" {{checked enabled}}>
-          <label for="{{@key}}">{{localize label}}</label>
-        </td>
-      </tr>
-      {{/each}}
+      {{#if lightBased}}
+      <thead>
+        <tr>
+          <th><i class="fa-solid fa-toggle-off"></i></th>
+          <th><i class="fa-regular fa-lightbulb"></i></th>
+          <th>{{localize 'stealthy.detectionModesMenu.name'}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each detectionModes}}
+        <tr>
+          <td>
+            <span data-tooltip="<div>{{localize 'stealthy.detectionModesMenu.enable'}}</div>">
+              <input type="checkbox" name="{{@key}}-enabled" id="stealthy-{{@key}}-enabled" {{checked enabled}}>
+            </span>
+          </td>
+          <td>
+            <span data-tooltip="<div>{{localize 'stealthy.detectionModesMenu.light'}}</div>">
+              <input type="checkbox" name="{{@key}}-lightBased" id="stealthy-{{@key}}-lightBased" {{checked
+                lightBased}}>
+            </span>
+          </td>
+          <td>
+            <label for="{{@key}}">{{localize label}}</label>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+      {{else}}
+      <thead>
+        <tr>
+          <th><i class="fa-solid fa-toggle-off"></i></th>
+          <th>{{localize 'stealthy.detectionModesMenu.name'}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each detectionModes}}
+        <tr>
+          <td>
+            <span data-tooltip="<div>{{localize 'stealthy.detectionModesMenu.enable'}}</div>">
+              <input type="checkbox" name="{{@key}}-enabled" id="stealthy-{{@key}}-enabled" {{checked enabled}}>
+            </span>
+          </td>
+          <td>
+            <label for="{{@key}}">{{localize label}}</label>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+      {{/if}}
     </table>
   </div>
 

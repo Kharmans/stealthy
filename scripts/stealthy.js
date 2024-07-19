@@ -1,6 +1,7 @@
 export class Stealthy {
 
   static MODULE_ID = 'stealthy';
+  static ALLOWED_DETECTION_MODES = 'allowedDetectionModesV2';
 
   constructor(engine) {
     this.engine = engine;
@@ -28,7 +29,6 @@ export class Stealthy {
   }
 
   setup() {
-    this.engine.patchFoundry();
     this.socket = socketlib.registerModule(Stealthy.MODULE_ID);
     this.socket.register('TogglePerceptionBanking', this.togglePerceptionBanking);
     this.socket.register('GetPerceptionBanking', this.getPerceptionBanking);

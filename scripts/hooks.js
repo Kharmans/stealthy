@@ -6,15 +6,6 @@ Hooks.once('setup', () => {
 
   stealthy.stealthToActor = game.settings.get(Stealthy.MODULE_ID, 'stealthToActor');
   stealthy.perceptionToActor = game.settings.get(Stealthy.MODULE_ID, 'perceptionToActor');
-
-  const schemaVersion = game.settings.get(Stealthy.MODULE_ID, 'schema');
-  if (schemaVersion !== moduleVersion) {
-    Stealthy.log(`Found schema version ${schemaVersion}`);
-    Hooks.once('ready', () => {
-      game.settings.set(Stealthy.MODULE_ID, 'schema', moduleVersion);
-    });
-  }
-
   stealthy.bankingPerception = game.settings.get(Stealthy.MODULE_ID, 'activeSpot');
 
   Stealthy.log(`${moduleVersion}: setup`);
@@ -95,8 +86,8 @@ Hooks.on('getSceneControlButtons', (controls) => {
     title: game.i18n.localize("stealthy.bankPerception"),
     toggle: true,
     active: stealthy.bankingPerception,
-    onClick: (toggled) => {
-      game.settings.set(Stealthy.MODULE_ID, 'activeSpot', toggled);
+    onClick: async (toggled) => {
+      await game.settings.set(Stealthy.MODULE_ID, 'activeSpot', toggled);
       stealthy.socket.executeForEveryone('TogglePerceptionBanking', toggled);
     }
   });
