@@ -31,7 +31,7 @@ export class DetectionModesApplicationClass extends FormApplication {
         label: CONFIG.Canvas.detectionModes[k].label,
         ...v,
       }])
-      .sort();
+      .sort((a, b) => game.i18n.localize(a[1].label).localeCompare(game.i18n.localize(b[1].label)));
     context.detectionModes = Object.fromEntries(entries);
     if ('lightBased' in entries[0][1])
       context.lightBased = true;
@@ -39,19 +39,17 @@ export class DetectionModesApplicationClass extends FormApplication {
   }
 
   _updateObject(event, formData) {
-    Stealthy.log('_updateObject', { event, formData });
     const original = game.settings.get(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES);
     let modes = {};
-    for (let [key, value] of Object.entries(formData)) {
-      const bits = key.split('-');
-      key = bits[1];
-      if (!(key in modes)) modes[key] = {};
-      modes[key][bits[2]] = value;
+    for (const [key, value] of Object.entries(formData)) {
+      const [mode, property] = key.split('-');
+      if (!(mode in modes)) modes[mode] = {};
+      modes[mode][property] = value;
     }
-    Stealthy.log('new modes', modes);
 
-    if (false && JSON.stringify(formData) !== JSON.stringify(original)) {
+    if (JSON.stringify(formData) !== JSON.stringify(original)) {
       ui.notifications.warn(game.i18n.localize("stealthy.detectionModesMenu.warning"));
+      Stealthy.log('new setting', modes);
       game.settings.set(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES, modes);
     }
   }
