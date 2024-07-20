@@ -60,8 +60,8 @@
       "label": "Настройка Режимов Обнаружения",
       "hint": "Определяет, для каких Режимов Обнаружения эффект стелс будет скрывать/раскрывать токены",
       "warning": "Для применения изменений к выбранным Режимам Обнаружения требуется перезагрузка.",
-      "enable": "Is enabled",
-      "light": "Is affected by dim vs bright lighting"
+      "enable": "Is mode enabled",
+      "light": "Is mode affected by dim vs bright lighting"
     },
     "source": {
       "hint": "Какой источник использовать для активного эффекта, хранящегося в актере",

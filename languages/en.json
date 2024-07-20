@@ -61,8 +61,8 @@
       "label": "Configure Detection Modes",
       "hint": "Enable which detection modes stealth will apply to",
       "warning": "Reload is required to apply changes to selected detection modes",
-      "enable": "Is enabled",
-      "light": "Is affected by dim vs bright lighting"
+      "enable": "Is mode enabled",
+      "light": "Is mode affected by dim vs bright lighting"
     },
     "source": {
       "hint": "Which source to use for the Active Effect stored on the actor",

@@ -44,7 +44,7 @@ export class EnginePF1 extends Engine {
   }
 
   async ready() {
-    await super.init();
+    await super.ready();
 
     const offset = game.settings.get(Stealthy.MODULE_ID, 'passiveSpotOffset');
     if (offset === -999) {
