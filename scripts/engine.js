@@ -523,7 +523,7 @@ export default class Engine {
 
   async bankStealth(token, value) {
     while (!stealthy.stealthToActor) {
-      if (this.findStealthEffect(actor)) break;
+      if (this.findStealthEffect(token.actor)) break;
       await this.bankRollOnToken(token, 'stealth', value);
       return;
     }
@@ -532,7 +532,7 @@ export default class Engine {
 
   async bankPerception(token, value) {
     while (!stealthy.perceptionToActor) {
-      if (this.findPerceptionEffect(actor)) break;
+      if (this.findPerceptionEffect(token.actor)) break;
       await this.bankRollOnToken(token, 'perception', value);
       return;
     }

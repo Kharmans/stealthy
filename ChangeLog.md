@@ -1,3 +1,6 @@
+# v4.6.2
+* Fix the fix in 4.6.1
+
 # v4.6.1
 * Update pt-BR.json (thanks Kharmans)
 * Handle the case where banking is changed from actor to token while a stealth effect is still active on tokens. In this case, the effect will continue to hold the banked values until it is removed.
