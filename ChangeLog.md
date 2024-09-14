@@ -1,3 +1,6 @@
+# v4.8.0
+* dnd5e: compatible with 3.x and 4.x
+
 # v4.7.0
 * dnd5e: CPR is now an option to be a source for Stealthy's active effects if your version of CPR has the `getSidebarEffectsData` function, which is only available in 12.21 beta and beyond AFAIK. Stealthy will ignore CPR if the function isn't there.
 
