@@ -302,7 +302,7 @@ export default class Engine {
         requiresReload: true,
         config: true,
         type: String,
-        default: ''
+        default: 'Hidden;Caché;Escondido;Стелс'
       },
       hiddenSource: {
         name: "stealthy.hidden.source",
