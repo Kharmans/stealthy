@@ -9,7 +9,9 @@
         "hint": "Cette chaîne sera envoyée via i18n.localize(). Changing these may affect overall automation of Stealthy's effects."
       },
       "icon": "Icône cachée",
-      "iconhint": "Icône par défaut pour l'effet masqué"
+      "iconhint": "Icône par défaut pour l'effet masqué",
+      "aliases": "Other names to recognize as hidden",
+      "aliasesHint": "Separate names with semicolons. This is useful in mixed-language situations"
     },
     "spot": {
       "name": "Détection",

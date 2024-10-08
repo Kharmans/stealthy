@@ -91,6 +91,7 @@ export default class Engine {
     game.settings.register(Stealthy.MODULE_ID, 'exposure', settings.exposure);
     game.settings.register(Stealthy.MODULE_ID, 'gIDimThreshold', settings.gIDimThreshold);
     game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', settings.spotSecretDoors);
+    game.settings.register(Stealthy.MODULE_ID, 'hiddenAliases', settings.hiddenAliases);
 
     game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', settings.stealthToActor);
     game.settings.register(Stealthy.MODULE_ID, 'perceptionToActor', settings.perceptionToActor);
@@ -119,8 +120,13 @@ export default class Engine {
 
   setup() {
     this.hiddenName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'hiddenLabel'));
+    this.hiddenAliases = [this.hiddenName];
     this.spotName = game.i18n.localize(game.settings.get(Stealthy.MODULE_ID, 'spotLabel'));
+    const aliases = game.settings.get(Stealthy.MODULE_ID, 'hiddenAliases');
+    if (aliases.length > 0)
+      this.hiddenAliases.push(...aliases.split(";"));
     Stealthy.log(`hiddenName='${this.hiddenName}', spotName='${this.spotName}'`);
+    Stealthy.log(`hiddenAliases = `, this.hiddenAliases);
     if (game.settings.get(Stealthy.MODULE_ID, 'spotSecretDoors')) {
       Doors.setup();
     }
@@ -288,6 +294,15 @@ export default class Engine {
         config: true,
         type: Boolean,
         default: false,
+      },
+      hiddenAliases: {
+        name: "stealthy.hidden.aliases",
+        hint: "stealthy.hidden.aliasesHint",
+        scope: 'world',
+        requiresReload: true,
+        config: true,
+        type: String,
+        default: ''
       },
       hiddenSource: {
         name: "stealthy.hidden.source",
@@ -554,7 +569,7 @@ export default class Engine {
 
   findPerceptionEffect(actor) {
     const beforeV11 = Math.floor(game.version) < 11;
-    return actor?.effects.find((e) => !e.disabled && this.spotName === (beforeV11 ? e.label : e.name));
+    return actor?.effects.find((e) => !e.disabled && this.hiddenAliases.includes(beforeV11 ? e.label : e.name));
   }
 
   makeStealthEffectMaker(name) {

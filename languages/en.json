@@ -9,7 +9,9 @@
         "hint": "This string will be sent through i18n.localize(). Changing these may affect overall automation of Stealthy's effects."
       },
       "icon": "Hidden icon",
-      "iconhint": "Default icon for Hidden effect"
+      "iconhint": "Default icon for Hidden effect",
+      "aliases": "Other names to recognize as hidden",
+      "aliasesHint": "Separate names with semicolons. This is useful in mixed-language situations"
     },
     "spot": {
       "name": "Spot",

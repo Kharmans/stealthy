@@ -1,3 +1,6 @@
+# v4.9.0
+* Add a setting to specify additional words to recognize as 'hidden'. Useful in mixed language sessions.
+
 # v4.8.0
 * dnd5e: compatible with 3.x and 4.x
 

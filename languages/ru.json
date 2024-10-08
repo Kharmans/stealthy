@@ -9,7 +9,9 @@
         "hint": "Эта строка будет обработана через i18n.localize. Изменение может повлиять на общую автоматизацию эффектов модуля."
       },
       "icon": "Иконка Статуса Стелс",
-      "iconhint": "Значек по умолчанию для статуса Стелс"
+      "iconhint": "Значек по умолчанию для статуса Стелс",
+      "aliases": "Other names to recognize as hidden",
+      "aliasesHint": "Separate names with semicolons. This is useful in mixed-language situations"
     },
     "spot": {
       "name": "Поиск",
