@@ -55,6 +55,16 @@ export class Stealthy {
     await this.engine.bankStealth(token, value);
   }
 
+  async clearPerception(token) {
+    Stealthy.log(`stealthy.clearPerception`, { token });
+    await this.engine.clearPerception(token);
+  }
+
+  async clearStealth(token) {
+    Stealthy.log(`stealthy.clearStealth`, { token });
+    await this.engine.clearStealth(token);
+  }
+
   async togglePerceptionBanking(toggled) {
     Stealthy.log(`ToggletPerceptionBanking <= ${toggled}`);
     stealthy.bankingPerception = toggled;

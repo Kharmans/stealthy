@@ -31,6 +31,13 @@ function versionAtLeast(version, target) {
   return true;
 }
 
+function interpolateString(str, interpolations) {
+  return str.replace(
+    /\{([A-Za-z0-9_]+)\}/g,
+    (match, key) => interpolations.hasOwnProperty(key) ? interpolations[key] : match
+  );
+}
+
 export default class Engine {
 
   constructor() {
@@ -92,6 +99,7 @@ export default class Engine {
     game.settings.register(Stealthy.MODULE_ID, 'gIDimThreshold', settings.gIDimThreshold);
     game.settings.register(Stealthy.MODULE_ID, 'spotSecretDoors', settings.spotSecretDoors);
     game.settings.register(Stealthy.MODULE_ID, 'hiddenAliases', settings.hiddenAliases);
+    game.settings.register(Stealthy.MODULE_ID, 'clearAfterCombat', settings.clearAfterCombat);
 
     game.settings.register(Stealthy.MODULE_ID, 'stealthToActor', settings.stealthToActor);
     game.settings.register(Stealthy.MODULE_ID, 'perceptionToActor', settings.perceptionToActor);
@@ -304,6 +312,15 @@ export default class Engine {
         type: String,
         default: 'Hidden;Caché;Escondido;Стелс'
       },
+      clearAfterCombat: {
+        name: "stealthy.clearAfterCombat.name",
+        hint: "stealthy.clearAfterCombat.hint",
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        default: true,
+      },
+
       hiddenSource: {
         name: "stealthy.hidden.source",
         hint: "stealthy.source.hint",
@@ -554,6 +571,67 @@ export default class Engine {
     await this.updateOrCreatePerceptionEffect(token.actor, { perception: value });
   }
 
+  async createClearMessage(token, skill, value) {
+    const text = interpolateString(
+      game.i18n.localize(`${Stealthy.MODULE_ID}.clearAfterCombat.${skill}`),
+      { name: token.name }
+    );
+    const tooltip = game.i18n.localize(`${Stealthy.MODULE_ID}.clearAfterCombat.restoreBank`);
+    const content = `
+    <div>
+      <span>${text}</span>
+      <button id="rebank-${skill}-${token.id}" data-button='${JSON.stringify(value)}' title="${tooltip}">
+        <i class="fas fa-undo"></i>
+      </button>
+    </div>`;
+    ChatMessage.create({
+      user: game.user._id,
+      speaker: ChatMessage.getSpeaker({ token }),
+      content,
+      type: CONST.CHAT_MESSAGE_TYPES.OTHER
+    });
+  }
+
+  async clearStealth(token) {
+    let value = undefined;
+    const tokenDoc = (token instanceof Token) ? token.document : token;
+    if (stealthy.stealthToActor) {
+      const stealth = this.findStealthEffect(token.actor);
+      if (!stealth) return;
+      value = stealth?.flags?.stealthy?.stealth;
+      if (value === undefined) return;
+      await token.actor.deleteEmbeddedDocuments('ActiveEffect', [stealth._id]);
+    } else {
+      value = tokenDoc.flags?.stealthy?.stealth;
+      if (value === undefined) return;
+      let update = { _id: token.id, };
+      update['flags.stealthy.-=stealth'] = true;
+      await canvas.scene.updateEmbeddedDocuments("Token", [update]);
+    }
+
+    // await this.createClearMessage(token, 'stealth', value);
+  }
+
+  async clearPerception(token) {
+    let value = undefined;
+    const tokenDoc = (token instanceof Token) ? token.document : token;
+    if (stealthy.perceptionToActor) {
+      const perception = this.findPerceptionEffect(token.actor);
+      if (!perception) return;
+      value = perception?.flags?.stealthy?.perception;
+      if (value === undefined) return;
+      await token.actor.deleteEmbeddedDocuments('ActiveEffect', [perception._id]);
+    } else {
+      value = tokenDoc.flags?.stealthy?.perception;
+      if (value === undefined) return;
+      let update = { _id: token.id, };
+      update['flags.stealthy.-=perception'] = true;
+      await canvas.scene.updateEmbeddedDocuments("Token", [update]);
+    }
+
+    // await this.createClearMessage(token, 'perception', value);
+  }
+
   rollStealth() {
     stealthy.socket.executeForEveryone('RefreshPerception');
   }
@@ -665,7 +743,7 @@ export default class Engine {
     let effect = actor.effects.find((e) => name === (beforeV11 ? e.label : e.name));
 
     if (!effect) {
-      effect = await this.createSourcedEffect({ name, actor,source, makeEffect });
+      effect = await this.createSourcedEffect({ name, actor, source, makeEffect });
 
       // If we haven't found an ouside source, create the default one
       if (!effect) {

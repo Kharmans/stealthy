@@ -1,3 +1,6 @@
+# v4.10
+* Add an opt-out setting to clear Stealthy's stealth/perception flags from combatants at combat end.
+
 # v4.9.1
 * Apply alias to Hidden, not Spot (whoops!!)
 * When testing for hidden/spot effects, first check for Stealthy's flags before resorting to names.

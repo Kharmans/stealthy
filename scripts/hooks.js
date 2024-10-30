@@ -119,3 +119,14 @@ Hooks.once('ready', async () => {
     ui.notifications.error("Stealthy requires the 'libWrapper' module. Please install and activate it.");
   }
 });
+
+Hooks.on('deleteCombat', async (combat, ...args) => {
+  const clearAfterCombat = game.settings.get(Stealthy.MODULE_ID, 'clearAfterCombat');
+  if (!clearAfterCombat) return;
+  for (const combatant of combat.combatants.contents) {
+    const token = combatant?.token;
+    if (!token) continue;
+    await stealthy.clearPerception(token);
+    await stealthy.clearStealth(token);
+  }
+});
