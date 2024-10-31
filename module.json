@@ -94,8 +94,8 @@
   "url": "https://github.com/Eligarf/stealthy",
   "manifest": "replaced",
   "download": "replaced",
-  "changelog": "ChangeLog.md",
+  "changelog": "replaced",
   "bugs": "https://github.com/Eligarf/stealthy/issues",
-  "readme": "README.md",
-  "license": "LICENSE"
+  "readme": "replaced",
+  "license": "replaced"
 }
