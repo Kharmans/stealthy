@@ -1,4 +1,8 @@
-# v4.10
+# v4.10.1
+* Update pt-BR.json (thanks Kharmans)
+* Stop the annoying manifest changed warning (after this update)
+
+# v4.10.0
 * Add an opt-out setting to clear Stealthy's stealth/perception flags from combatants at combat end.
 
 # v4.9.1
