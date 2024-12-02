@@ -13,6 +13,7 @@
   "version": "4.6",
   "compatibility": {
     "minimum": "10.291",
+    "maximum": "12",
     "verified": "12"
   },
   "relationships": {

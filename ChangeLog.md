@@ -1,3 +1,6 @@
+# v4.10.2
+* Set maximum foundry version since Stealthy doesn't work with v13 yet.
+
 # v4.10.1
 * Update pt-BR.json (thanks Kharmans)
 * Stop the annoying manifest changed warning (after this update)
