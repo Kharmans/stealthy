@@ -1,3 +1,7 @@
+# v5.0.0
+* Requires Foundry v12
+* Switch to ApplicationV2
+
 # v4.10.2
 * Set maximum foundry version since Stealthy doesn't work with v13 yet.
 

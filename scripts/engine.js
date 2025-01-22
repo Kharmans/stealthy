@@ -87,7 +87,7 @@ export default class Engine {
       name: "stealthy.detectionModesMenu.name",
       label: "stealthy.detectionModesMenu.label",
       hint: "stealthy.detectionModesMenu.hint",
-      icon: "fas fa-wrench",
+      icon: "fas fa-gear",
       type: DetectionModesApplicationClass,
       restricted: true,
     });

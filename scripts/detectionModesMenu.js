@@ -1,6 +1,7 @@
 import { Stealthy } from "./stealthy.js";
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-export class DetectionModesApplicationClass extends FormApplication {
+export class DetectionModesApplicationClass extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(object, options = {}) {
     super(object, options);
   }
@@ -9,22 +10,34 @@ export class DetectionModesApplicationClass extends FormApplication {
       .deepClone(game.settings.get(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES));
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      title: "stealthy.detectionModesMenu.label",
-      id: "stealthy-allowed-detection-modes",
-      template: "modules/stealthy/templates/detectionModes.hbs",
+  static DEFAULT_OPTIONS = {
+    id: 'stealthy-allowed-detection-modes',
+    tag: 'form',
+    form: {
+      handler: DetectionModesApplicationClass.#onSubmit,
       popOut: true,
-      width: "auto",
-      height: "auto",
       closeOnSubmit: true,
       submitOnClose: false,
       submitOnChange: false,
-    });
+    },
+    window: {
+      icon: "fas fa-gear",
+      title: "stealthy.detectionModesMenu.label",
+    }
+  };
+
+  get title() {
+    return game.i18n.localize(this.options.window.title);
   }
 
-  getData() {
-    const context = super.getData();
+  static PARTS = {
+    form: {
+      template: "modules/stealthy/templates/detectionModes.hbs",
+    }
+  };
+
+  async _prepareContext() {
+    const context = await super._prepareContext();
     const entries = Object.entries(this.#detectionModes)
       .filter(([k, v]) => k in CONFIG.Canvas.detectionModes && k !== 'undefined')
       .map(([k, v]) => [k, {
@@ -38,16 +51,17 @@ export class DetectionModesApplicationClass extends FormApplication {
     return context;
   }
 
-  _updateObject(event, formData) {
+  static async #onSubmit(event, form, formData) {
+    const object = formData.object;
     const original = game.settings.get(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES);
     let modes = {};
-    for (const [key, value] of Object.entries(formData)) {
+    for (const [key, value] of Object.entries(object)) {
       const [mode, property] = key.split('-');
       if (!(mode in modes)) modes[mode] = {};
       modes[mode][property] = value;
     }
-
-    if (JSON.stringify(formData) !== JSON.stringify(original)) {
+ 
+    if (JSON.stringify(object) !== JSON.stringify(original)) {
       ui.notifications.warn(game.i18n.localize("stealthy.detectionModesMenu.warning"));
       Stealthy.log('new setting', modes);
       game.settings.set(Stealthy.MODULE_ID, Stealthy.ALLOWED_DETECTION_MODES, modes);
